@@ -63,3 +63,33 @@ function getState( now ) {
     return 'day';
 }
 
+function getWantedTemp( room, state) {
+
+    if (state === 'gone')  return 12;
+    if (state === 'out')   return 15;
+    if (state === 'night') return 15;
+
+    // only state left is day:
+    switch (room) {
+        case 'parents':
+            return 17;
+
+        case 'living':
+            if ( new Date().getHours() < 12 ) {
+                return 17;
+            } else {
+                return 18;
+            }
+
+        case 'kitchen':
+            return 18;
+
+        case 'bath':
+            return 20;
+    }
+
+}
+
+['parents','living','kitchen','bath'].forEach( function(item) {
+    console.log( "Wanted temp is " + getWantedTemp(item,houseState) + " for "+ item);
+});
