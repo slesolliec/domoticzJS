@@ -31,9 +31,16 @@ https.get(url, function(res) {
 const houseState = getState( new Date() );
 console.log("houseState : " + houseState);
 
+
 function showTemp (element) {
+    var room = element.Name.substring(4);
+
+    var wantedTemp = getWantedTemp(room, houseState);
+
+
+
     console.log(
-        'Temp ' + element.Temp + ' for ' + element.Name + ' with idx=' + element.idx
+        'Temp ' + element.Temp + ' for ' + room + ' with idx=' + element.idx
     );
 }
 
@@ -63,6 +70,7 @@ function getState( now ) {
     return 'day';
 }
 
+
 function getWantedTemp( room, state) {
 
     if (state === 'gone')  return 12;
@@ -71,8 +79,9 @@ function getWantedTemp( room, state) {
 
     // only state left is day:
     switch (room) {
-        case 'parents':
-            return 17;
+        case 'parents':  return 17;
+        case 'kitchen':  return 18;
+        case 'bath':     return 19;
 
         case 'living':
             if ( new Date().getHours() < 12 ) {
@@ -80,14 +89,7 @@ function getWantedTemp( room, state) {
             } else {
                 return 18;
             }
-
-        case 'kitchen':
-            return 18;
-
-        case 'bath':
-            return 20;
     }
-
 }
 
 ['parents','living','kitchen','bath'].forEach( function(item) {
