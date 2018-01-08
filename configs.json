@@ -1,0 +1,5 @@
+{
+  "domoticz":"http://your.domoticz.com:8080",
+  "username":"mylogin",
+  "password":"mypass"
+}
