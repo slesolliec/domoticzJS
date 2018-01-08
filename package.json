@@ -1,0 +1,22 @@
+{
+  "name": "domo",
+  "version": "1.0.0",
+  "description": "Piloting Domoticz with Node.js.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slesolliec/domoticzJS.git"
+  },
+  "keywords": [
+    "Domoticz"
+  ],
+  "author": "Stéphane Le Solliec",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/slesolliec/domoticzJS/issues"
+  },
+  "homepage": "https://github.com/slesolliec/domoticzJS#readme"
+}
