@@ -14,9 +14,11 @@ const fs    = require("fs");
 var configs = fs.readFileSync("/home/stephane/domo-configs.json");
 configs = JSON.parse(configs);
 
-console.log('---- ' + new Date().getHours() + ':' + new Date().getMinutes() + ' ----' );
+const now = new Date();
 
-const houseState = getState( new Date() );
+console.log('---- ' + now.getHours() + ':' + now.getMinutes() + ' ----' );
+
+const houseState = getState( now );
 console.log("houseState : " + houseState);
 
 // url of Domoticz JSON API protected by username / password
@@ -110,7 +112,7 @@ function constantLength ( str ) {
 
 
 function switchOn( room ) {
-    console.log( new Date().getHours() + ':' + new Date().getMinutes() + " Switch " + room + " ON");
+    console.log( now.getHours() + ':' + now.getMinutes() + " Switch " + room + " ON");
 
     switch ( room ) {
         case 'Bed':
@@ -134,7 +136,7 @@ function switchOn( room ) {
 
 
 function switchOff( room ) {
-    console.log( new Date().getHours() + ':' + new Date().getMinutes() + " Switch " + room + " OFF");
+    console.log( now.getHours() + ':' + now.getMinutes() + " Switch " + room + " OFF");
 
     switch (room) {
         case 'Bed':
@@ -214,7 +216,7 @@ function getBaseWantedTemp ( room, state ) {
         case 'Bath':     return 21;
 
         case 'Living':
-            if ( new Date().getHours() < 12 ) {
+            if ( now.getHours() < 12 ) {
                 return 17;
             } else {
                 return 18;
