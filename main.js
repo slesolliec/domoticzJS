@@ -1,6 +1,5 @@
 "use strict";
 
-// todo:    SdB controller
 // todo:    fault tolerance
 // todo:    gone functionality
 // todo:    count heating minutes + upload to Google sheet
@@ -80,12 +79,20 @@ function manageHeater (thermometer) {
 
     if (thermometer.Temp < wantedTemp) {
         console.log( room + " is cold: " + thermometer.Temp + '/' + wantedTemp );
-        if ( heaters[room] === 'On')    switchOn( room );
+        if ( room === 'Bath' ) {
+            if ( heaters[room] === 'Off')   switchOn( room );
+        } else {
+            if ( heaters[room] === 'On')    switchOn( room );
+        }
     }
 
     if (thermometer.Temp > wantedTemp) {
         console.log( constantLength( room ) + " is  hot: " + thermometer.Temp + '/' + wantedTemp);
-        if ( heaters[room] === 'Off')    switchOff( room );
+        if ( room === 'Bath' ) {
+            if ( heaters[room] === 'On')    switchOff( room );
+        } else {
+            if ( heaters[room] === 'Off')   switchOff( room );
+        }
     }
 }
 
@@ -115,6 +122,9 @@ function switchOn( room ) {
             https.get(url + '&type=command&param=switchlight&idx=13&switchcmd=Off');
             https.get(url + '&type=command&param=switchlight&idx=37&switchcmd=Off');
             break;
+        case 'Bath':
+            https.get(url + '&type=command&param=switchlight&idx=39&switchcmd=On');
+            break;
     }
 
 }
@@ -135,6 +145,9 @@ function switchOff( room ) {
             https.get(url + '&type=command&param=switchlight&idx=12&switchcmd=On');
             https.get(url + '&type=command&param=switchlight&idx=13&switchcmd=On');
             https.get(url + '&type=command&param=switchlight&idx=37&switchcmd=On');
+            break;
+        case 'Bath':
+            https.get(url + '&type=command&param=switchlight&idx=39&switchcmd=Off');
             break;
     }
 
@@ -195,7 +208,7 @@ function getBaseWantedTemp ( room, state ) {
     switch (room) {
         case 'Bed':      return 17;
         case 'Kitchen':  return 18;
-        case 'Bath':     return 19;
+        case 'Bath':     return 21;
 
         case 'Living':
             if ( new Date().getHours() < 12 ) {
