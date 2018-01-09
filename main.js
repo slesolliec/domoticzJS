@@ -3,6 +3,8 @@
 // todo:    fault tolerance
 // todo:    gone functionality
 // todo:    count heating minutes + upload to Google sheet
+// todo:    remote control: automatic shutting after two hours
+
 
 
 const https = require("http");
@@ -78,7 +80,7 @@ function manageHeater (thermometer) {
     var wantedTemp = getWantedTemp(room, houseState);
 
     if (thermometer.Temp < wantedTemp) {
-        console.log( room + " is cold: " + thermometer.Temp + '/' + wantedTemp );
+        console.log( constantLength( room ) + " is cold: " + thermometer.Temp + '/' + wantedTemp );
         if ( room === 'Bath' ) {
             if ( heaters[room] === 'Off')   switchOn( room );
         } else {
@@ -108,7 +110,7 @@ function constantLength ( str ) {
 
 
 function switchOn( room ) {
-    console.log("Switch " + room + " ON");
+    console.log( new Date().getHours() + ':' + new Date().getMinutes() + " Switch " + room + " ON");
 
     switch ( room ) {
         case 'Bed':
@@ -132,7 +134,7 @@ function switchOn( room ) {
 
 
 function switchOff( room ) {
-    console.log("Switch " + room + " OFF");
+    console.log( new Date().getHours() + ':' + new Date().getMinutes() + " Switch " + room + " OFF");
 
     switch (room) {
         case 'Bed':
