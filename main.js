@@ -9,7 +9,7 @@ const https = require("http");
 const fs    = require("fs");
 
 // loading configs
-var configs = fs.readFileSync("configs.json");
+var configs = fs.readFileSync("/home/stephane/domo-configs.json");
 configs = JSON.parse(configs);
 
 console.log('---- ' + new Date().getHours() + ':' + new Date().getMinutes() + ' ----' );
@@ -84,15 +84,16 @@ function manageHeater (thermometer) {
         } else {
             if ( heaters[room] === 'On')    switchOn( room );
         }
-    }
 
-    if (thermometer.Temp > wantedTemp) {
-        console.log( constantLength( room ) + " is  hot: " + thermometer.Temp + '/' + wantedTemp);
+    } else if (thermometer.Temp > wantedTemp) {
+        console.log( constantLength( room ) + " is hot : " + thermometer.Temp + '/' + wantedTemp);
         if ( room === 'Bath' ) {
             if ( heaters[room] === 'On')    switchOff( room );
         } else {
             if ( heaters[room] === 'Off')   switchOff( room );
         }
+    } else {
+        console.log( constantLength( room ) + " is ok  : " + thermometer.Temp + '/' + wantedTemp);
     }
 }
 
