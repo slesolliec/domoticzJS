@@ -11,11 +11,10 @@ const https = require("http");
 const fs    = require("fs");
 
 // loading configs
-var configs = fs.readFileSync("/home/stephane/domo-configs.json");
+var configs = fs.readFileSync("configs.json");
 configs = JSON.parse(configs);
 
 const now = new Date();
-
 console.log('---- ' + now.getHours() + ':' + now.getMinutes() + ' ----' );
 
 const houseState = getState( now );
@@ -74,11 +73,8 @@ function getTemperatures() {
 
 
 
-
-
-
 function manageHeater (thermometer) {
-    var room = thermometer.Name.substring(4);
+    var room       = thermometer.Name.substring(4);
     var wantedTemp = getWantedTemp(room, houseState);
 
     if (thermometer.Temp < wantedTemp) {
@@ -99,6 +95,24 @@ function manageHeater (thermometer) {
     } else {
         console.log( constantLength( room ) + " is ok  : " + thermometer.Temp + '/' + wantedTemp);
     }
+
+    // resend command every quarter if necessary
+    if (now.getMinutes() % 15 === 0) {
+        if (thermometer.Temp < wantedTemp - 0.25) {
+            if ( room === 'Bath' ) {
+                if ( heaters[room] === 'On')   switchOn( room );
+            } else {
+                if ( heaters[room] === 'Off')  switchOn( room );
+            }
+        } else if (thermometer.Temp > wantedTemp + 0.25) {
+            if ( room === 'Bath' ) {
+                if ( heaters[room] === 'Off')  switchOff( room );
+            } else {
+                if ( heaters[room] === 'On')   switchOff( room );
+            }
+        }
+    }
+
 }
 
 
