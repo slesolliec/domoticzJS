@@ -14,17 +14,16 @@ console.log("houseState : " + houseState);
 const url = configs.domoticz
     + "/json.htm"
     + "?username=" + Buffer( configs.username ).toString('base64')
-    + "&password=" + Buffer( configs.password ).toString('base64')
-    + "&type=devices&used=true";
+    + "&password=" + Buffer( configs.password ).toString('base64');
 // console.log(url);
 
 var tempData      = '';
 var switchesData  = '';
 var heaters = {
-    'parents': '-',
-    'living' : '-',
-    'bath'   : '-',
-    'kitchen': '-'
+    'Bed'    : '-',
+    'Living' : '-',
+    'Bath'   : '-',
+    'Kitchen': '-'
 };
 
 getSwitchesStatus();
@@ -33,18 +32,16 @@ getSwitchesStatus();
 
 // get switch states from Domoticz
 function getSwitchesStatus() {
-    https.get(url + '&filter=light', function(res) {
+    https.get(url + '&type=devices&used=true&filter=light', function(res) {
         res.setEncoding("utf8");
         res.on("data", function(data) { switchesData += data; });
         res.on("end",  function() {
             // console.log(switchesData);
             switchesData = JSON.parse(switchesData);
             switchesData.result.forEach( function (mySwitch) {
-                 var room = mySwitch.Name.substring(6);
-
-                 if (room === 'Parents') heaters.parents = mySwitch.Data;
-
-                console.log( mySwitch.Name + ' is ' + mySwitch.Data + ' (idx=' + mySwitch.idx + ')'  );
+                var room = mySwitch.Name.substring(6);
+                heaters[room] = mySwitch.Data;
+                console.log( mySwitch.Name + ' is ' + mySwitch.Data + ' ( idx = ' + mySwitch.idx + ')'  );
             });
             console.log('-----------------');
             getTemperatures();
@@ -54,7 +51,7 @@ function getSwitchesStatus() {
 
 function getTemperatures() {
 // get temperatures from Domoticz
-    https.get(url + '&filter=temp', function(res) {
+    https.get(url + '&type=devices&used=true&filter=temp', function(res) {
         res.setEncoding("utf8");
         res.on("data", function(data) { tempData += data; });
         res.on("end",  function() {
@@ -76,30 +73,55 @@ function manageHeater (thermometer) {
 
     if (thermometer.Temp < wantedTemp) {
         console.log( room + " is cold: " + thermometer.Temp + '/' + wantedTemp );
-
-        if ( heaters[room] === 'On') {
-            // switch parent ON
-            console.log("Switch "+room+" ON");
-        }
+        if ( heaters[room] === 'On')    switchOn( room );
     }
-
 
     if (thermometer.Temp > wantedTemp) {
         console.log( room + " is  hot: " + thermometer.Temp + '/' + wantedTemp);
-
-        if ( heaters[room] === 'Off') {
-            // switch parent OFF
-            switchOn(room);
-        }
+        if ( heaters[room] === 'Off')    switchOff( room );
     }
 
 }
 
 
 function switchOn( room ) {
+    console.log("Switch " + room + " ON");
+
+    switch ( room ) {
+        case 'Bed':
+            https.get(url + '&type=command&param=switchlight&idx=3&switchcmd=Off');
+            break;
+        case 'Kitchen':
+            https.get(url + '&type=command&param=switchlight&idx=30&switchcmd=Off');
+            https.get(url + '&type=command&param=switchlight&idx=36&switchcmd=On');
+            break;
+        case 'Living':
+            https.get(url + '&type=command&param=switchlight&idx=12&switchcmd=Off');
+            https.get(url + '&type=command&param=switchlight&idx=13&switchcmd=Off');
+            https.get(url + '&type=command&param=switchlight&idx=37&switchcmd=Off');
+            break;
+    }
+
+}
+
+
+function switchOff( room ) {
     console.log("Switch " + room + " OFF");
 
-    
+    switch (room) {
+        case 'Bed':
+            https.get(url + '&type=command&param=switchlight&idx=3&switchcmd=On');
+            break;
+        case 'Kitchen':
+            https.get(url + '&type=command&param=switchlight&idx=30&switchcmd=On');
+            https.get(url + '&type=command&param=switchlight&idx=36&switchcmd=Off');
+            break;
+        case 'Living':
+            https.get(url + '&type=command&param=switchlight&idx=12&switchcmd=On');
+            https.get(url + '&type=command&param=switchlight&idx=13&switchcmd=On');
+            https.get(url + '&type=command&param=switchlight&idx=37&switchcmd=On');
+            break;
+    }
 
 }
 
@@ -142,11 +164,11 @@ function getWantedTemp( room, state) {
 
     // only state left is day:
     switch (room) {
-        case 'parents':  return 17;
-        case 'kitchen':  return 18;
-        case 'bath':     return 19;
+        case 'Bed':      return 17;
+        case 'Kitchen':  return 18;
+        case 'Bath':     return 19;
 
-        case 'living':
+        case 'Living':
             if ( new Date().getHours() < 12 ) {
                 return 17;
             } else {
