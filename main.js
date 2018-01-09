@@ -7,6 +7,9 @@ const fs = require("fs");
 var configs = fs.readFileSync("configs.json");
 configs = JSON.parse(configs);
 
+const houseState = getState( new Date() );
+console.log("houseState : " + houseState);
+
 // url of Domoticz JSON API protected by username / password
 const url = configs.domoticz
     + "/json.htm"
@@ -15,52 +18,91 @@ const url = configs.domoticz
     + "&type=devices&used=true";
 // console.log(url);
 
-var tempData     = '';
-var switchesData = '';
+var tempData      = '';
+var switchesData  = '';
+var heaters = {
+    'parents': '-',
+    'living' : '-',
+    'bath'   : '-',
+    'kitchen': '-'
+};
+
+getSwitchesStatus();
+
 
 
 // get switch states from Domoticz
-https.get(url + '&filter=light', function(res) {
-    res.setEncoding("utf8");
-    res.on("data", function(data) { switchesData += data; });
-    res.on("end",  function() {
-        // console.log(switchesData);
-        switchesData = JSON.parse(switchesData);
-        switchesData.result.forEach( function (item) {
-                console.log( item.Name + ' is ' + item.Data + ' (idx=' + item.idx + ')'  );
+function getSwitchesStatus() {
+    https.get(url + '&filter=light', function(res) {
+        res.setEncoding("utf8");
+        res.on("data", function(data) { switchesData += data; });
+        res.on("end",  function() {
+            // console.log(switchesData);
+            switchesData = JSON.parse(switchesData);
+            switchesData.result.forEach( function (mySwitch) {
+                 var room = mySwitch.Name.substring(6);
+
+                 if (room === 'Parents') heaters.parents = mySwitch.Data;
+
+                console.log( mySwitch.Name + ' is ' + mySwitch.Data + ' (idx=' + mySwitch.idx + ')'  );
             });
+            console.log('-----------------');
+            getTemperatures();
+        });
     });
-});
+}
 
+function getTemperatures() {
 // get temperatures from Domoticz
-https.get(url + '&filter=temp', function(res) {
-    res.setEncoding("utf8");
-    res.on("data", function(data) { tempData += data; });
-    res.on("end",  function() {
-        // console.log(body);
-        tempData = JSON.parse(tempData);
-        tempData.result.forEach( showTemp )
+    https.get(url + '&filter=temp', function(res) {
+        res.setEncoding("utf8");
+        res.on("data", function(data) { tempData += data; });
+        res.on("end",  function() {
+            // console.log(body);
+            tempData = JSON.parse(tempData);
+            tempData.result.forEach( manageHeater )
+        });
     });
-});
+}
 
 
 
 
-const houseState = getState( new Date() );
-console.log("houseState : " + houseState);
 
 
-function showTemp (element) {
-    var room = element.Name.substring(4);
-
+function manageHeater (thermometer) {
+    var room = thermometer.Name.substring(4);
     var wantedTemp = getWantedTemp(room, houseState);
 
+    if (thermometer.Temp < wantedTemp) {
+        console.log( room + " is cold: " + thermometer.Temp + '/' + wantedTemp );
+
+        if ( heaters[room] === 'On') {
+            // switch parent ON
+            console.log("Switch "+room+" ON");
+        }
+    }
 
 
-    console.log(
-        'Temp ' + element.Temp + ' for ' + room + ' with idx=' + element.idx
-    );
+    if (thermometer.Temp > wantedTemp) {
+        console.log( room + " is  hot: " + thermometer.Temp + '/' + wantedTemp);
+
+        if ( heaters[room] === 'Off') {
+            // switch parent OFF
+            switchOn(room);
+        }
+    }
+
 }
+
+
+function switchOn( room ) {
+    console.log("Switch " + room + " OFF");
+
+    
+
+}
+
 
 
 // we get the state of the house: night, out, day, gone
@@ -113,7 +155,4 @@ function getWantedTemp( room, state) {
     }
 }
 
-['parents','living','kitchen','bath'].forEach( function(item) {
-    console.log( "Wanted temp is " + getWantedTemp(item,houseState) + " for "+ item);
-});
 
