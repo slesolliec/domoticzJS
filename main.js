@@ -1,11 +1,19 @@
 "use strict";
 
+// todo:    SdB controller
+// todo:    fault tolerance
+// todo:    gone functionality
+// todo:    count heating minutes + upload to Google sheet
+
+
 const https = require("http");
-const fs = require("fs");
+const fs    = require("fs");
 
 // loading configs
 var configs = fs.readFileSync("configs.json");
 configs = JSON.parse(configs);
+
+console.log('---- ' + new Date().getHours() + ':' + new Date().getMinutes() + ' ----' );
 
 const houseState = getState( new Date() );
 console.log("houseState : " + houseState);
@@ -39,11 +47,10 @@ function getSwitchesStatus() {
             // console.log(switchesData);
             switchesData = JSON.parse(switchesData);
             switchesData.result.forEach( function (mySwitch) {
-                var room = mySwitch.Name.substring(6);
+                var room = mySwitch.Name.replace('Heater','');
                 heaters[room] = mySwitch.Data;
-                console.log( mySwitch.Name + ' is ' + mySwitch.Data + ' ( idx = ' + mySwitch.idx + ')'  );
+                // console.log( mySwitch.Name + ' is ' + mySwitch.Data + ' ( idx = ' + mySwitch.idx + ')'  );
             });
-            console.log('-----------------');
             getTemperatures();
         });
     });
@@ -77,10 +84,18 @@ function manageHeater (thermometer) {
     }
 
     if (thermometer.Temp > wantedTemp) {
-        console.log( room + " is  hot: " + thermometer.Temp + '/' + wantedTemp);
+        console.log( constantLength( room ) + " is  hot: " + thermometer.Temp + '/' + wantedTemp);
         if ( heaters[room] === 'Off')    switchOff( room );
     }
+}
 
+
+function constantLength ( str ) {
+    var size = str.length;
+    for ( var i = size ; i < 7 ; i++) {
+        str += ' ';
+    }
+    return str;
 }
 
 
@@ -157,6 +172,20 @@ function getState( now ) {
 
 
 function getWantedTemp( room, state) {
+    var wanted = getBaseWantedTemp( room, state);
+
+    // add some warmth with Remote Control
+    switch ( room ) {
+        case 'Kitchen':  if (heaters.TC1B1 === 'On')   wanted += 1;   break;
+        case 'Living' :  if (heaters.TC1B2 === 'On')   wanted += 1;   break;
+        case 'Bed'    :  if (heaters.TC1B3 === 'On')   wanted += 2;   break;
+    }
+
+    return wanted;
+}
+
+
+function getBaseWantedTemp ( room, state ) {
 
     if (state === 'gone')  return 12;
     if (state === 'out')   return 15;
@@ -176,5 +205,3 @@ function getWantedTemp( room, state) {
             }
     }
 }
-
-
