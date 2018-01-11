@@ -1,9 +1,7 @@
 "use strict";
 
-// todo:    fault tolerance
 // todo:    gone functionality
 // todo:    count heating minutes + upload to Google sheet
-// todo:    remote control: automatic shutting after two hours
 
 
 
@@ -36,6 +34,13 @@ var heaters = {
     'Kitchen': '-'
 };
 
+// gives the idx of certain devices
+const devices = {
+    'TC1B1': 20,
+    'TC1B2': 29,
+    'TC1B3': 25
+};
+
 getSwitchesStatus();
 
 
@@ -52,6 +57,21 @@ function getSwitchesStatus() {
                 var room = mySwitch.Name.replace('Heater','');
                 heaters[room] = mySwitch.Data;
                 // console.log( mySwitch.Name + ' is ' + mySwitch.Data + ' ( idx = ' + mySwitch.idx + ')'  );
+
+                // we switch off the buttons after two hours
+                if (mySwitch.Name.substr(0,4) === 'TC1B') {
+                    if (mySwitch.Data === 'On') {
+                        var lastUpdate = new Date(mySwitch.LastUpdate);
+                        var lastUpdateInMinutes = Math.round( (now - lastUpdate) / 1000 / 60 );
+                        // console.log("Remote Control Button " + mySwitch.Name + " clicked " + lastUpdateInMinutes + " minutes ago");
+                        if (lastUpdateInMinutes > 120) {
+                            // we switch off the remote control button
+                            https.get(url + '&type=command&param=switchlight&idx=' + devices[mySwitch.Name] + '&switchcmd=Off');
+                            console.log("Shut down Remote Control Button " + mySwitch.Name + " after 2 hours");
+                        }
+                    }
+                }
+
             });
             getTemperatures();
         });
