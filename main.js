@@ -213,8 +213,16 @@ function getState( now ) {
                     return 'out';
             break;
 
+        case 3:
+        case 4:
+        case 5:
+            // normal day: heat from 5:30 to 22:00
+            if ((now.getHours() < 5 ) || (now.getHours() === 5 ) && (now.getMinutes() > 30 ) || (now.getHours() > 21))
+                return 'night';
+            break;
+
         default:
-            // normal day
+            // week-end:   heat from 8:00 to 22:00
             if ((now.getHours() < 8 ) || (now.getHours() > 21))
                 return 'night';
     }
