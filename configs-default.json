@@ -1,0 +1,5 @@
+{
+  "domoticz":"http://your.domoticz.server:port",
+  "username":"yourUsername",
+  "password":"yourPassword"
+}

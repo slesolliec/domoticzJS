@@ -9,7 +9,7 @@ const https = require("http");
 const fs    = require("fs");
 
 // loading configs
-var configs = fs.readFileSync("configs.json");
+var configs = fs.readFileSync("/Users/stephane/node/domoticzJS/configs.json");
 configs = JSON.parse(configs);
 
 const now = new Date();
