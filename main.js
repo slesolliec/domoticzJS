@@ -9,7 +9,7 @@ const https = require("http");
 const fs    = require("fs");
 
 // loading configs
-var configs = fs.readFileSync("/Users/stephane/node/domoticzJS/configs.json");
+var configs = fs.readFileSync("configs.json");
 configs = JSON.parse(configs);
 
 const now = new Date();
@@ -204,6 +204,7 @@ function getState( now ) {
     switch ( now.getDay() ) {
         case 1:
         case 2:
+        case 4:
             // working days
             if ((now.getHours() < 5 ) || (now.getHours() > 21) || (now.getHours() === 21) && (now.getMinutes() > 30))
                 return 'night';
@@ -214,7 +215,6 @@ function getState( now ) {
             break;
 
         case 3:
-        case 4:
         case 5:
             // normal day: heat from 5:30 to 22:00
             if ((now.getHours() < 5 ) || (now.getHours() === 5 ) && (now.getMinutes() > 30 ) || (now.getHours() > 21))
@@ -239,6 +239,14 @@ function getWantedTemp( room, state) {
         case 'Kitchen':  if (heaters.TC1B1 === 'On')   wanted += 1;   break;
         case 'Living' :  if (heaters.TC1B2 === 'On')   wanted += 1;   break;
         case 'Bed'    :  if (heaters.TC1B3 === 'On')   wanted += 2;   break;
+    }
+
+    // special case of Bathroom: heat from 4:30 during the week, switch off at 21:00
+    if (room === 'Bath') {
+        if ( now.getDay() < 6 && now.getDay() > 0 ) {
+            if ( now.getHours() === 4 && now.getMinutes() > 30 )    return 21;
+            if ( now.getHours() === 21 )                            return 15;
+        }
     }
 
     return wanted;
