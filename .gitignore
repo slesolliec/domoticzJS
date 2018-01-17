@@ -1,1 +1,5 @@
-/idea
+.idea/
+client-secret.json
+configs.json
+domo.log
+node_modules/

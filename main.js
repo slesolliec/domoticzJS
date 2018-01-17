@@ -1,7 +1,7 @@
 "use strict";
 
 // todo:    gone functionality
-// todo:    count heating minutes + upload to Google sheet
+// todo:    upload to Google sheet
 
 const https = require("http");
 const fs    = require("fs");
@@ -9,17 +9,26 @@ const fs    = require("fs");
 // loading configs
 const configs = JSON.parse( fs.readFileSync("configs.json") );
 
-const now = new Date();
-console.log('---- ' + now.getHours() + ':' + now.getMinutes() + ' ----' );
+// loading state of the house
+const state   = JSON.parse( fs.readFileSync("house_state.json"));
+const lastStateUpdate = new Date(state.lastUpdate);
 
-const houseState = getState( now );
-console.log("houseState : " + houseState);
+// setting current date
+const now = new Date();
+console.log('---- ' + now.getHours() + ':' + now.getMinutes() + ' ----');
+
+const minSinceLastRun = Math.round( (now - lastStateUpdate) / 1000 / 60 );
+// console.log(' Minutes since last run: ' + minSinceLastRun);
+
+// get status of the house
+const houseStatus = getState( now );
+console.log("houseState : " + houseStatus);
 
 // url of Domoticz JSON API protected by username / password
 const url = configs.domoticz
     + "/json.htm"
-    + "?username=" + Buffer( configs.username ).toString('base64')
-    + "&password=" + Buffer( configs.password ).toString('base64');
+    + "?username=" + new Buffer( configs.username ).toString('base64')
+    + "&password=" + new Buffer( configs.password ).toString('base64');
 // console.log(url);
 
 let tempData      = '';
@@ -55,6 +64,22 @@ function getSwitchesStatus() {
                 heaters[room] = mySwitch.Data;
                 // console.log( mySwitch.Name + ' is ' + mySwitch.Data + ' ( idx = ' + mySwitch.idx + ')'  );
 
+                // conso metering
+                switch ( room ) {
+                    case 'Bed':
+                    case 'Kitchen':
+                    case 'Living':
+                        if (mySwitch.Data === 'Off') {
+                            state[room][getHCHP( now )] += minSinceLastRun;
+                        }
+                        break;
+                    case 'Bath':
+                        if (mySwitch.Data === 'On') {
+                            state[room][getHCHP( now )] += minSinceLastRun;
+                        }
+                        break;
+                }
+
                 // we switch off the buttons after two hours
                 if (mySwitch.Name.substr(0,4) === 'TC1B') {
                     if (mySwitch.Data === 'On') {
@@ -70,6 +95,12 @@ function getSwitchesStatus() {
                 }
 
             });
+
+            // update last update
+            state.lastUpdate = now.toISOString();
+            fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
+            console.log( state );
+
             getTemperatures();
         });
     });
@@ -92,7 +123,7 @@ function getTemperatures() {
 
 function manageHeater (thermometer) {
     let room       = thermometer.Name.substring(4);
-    let wantedTemp = getWantedTemp(room, houseState);
+    let wantedTemp = getWantedTemp(room, houseStatus);
 
     if (thermometer.Temp < wantedTemp) {
         console.log( constantLength( room ) + " is cold: " + thermometer.Temp + '/' + wantedTemp );
@@ -225,6 +256,17 @@ function getState( now ) {
     }
 
     return 'day';
+}
+
+// Heures Pleines ou Heures Creuses?
+// This is a French specific parameter to some electricity subscription: from 22:30 to 06:30, power is cheaper
+function getHCHP ( date ) {
+    if ( date.getHours() < 6)   return 'HC';
+    if ( (date.getHours() === 6)  && (date.getMinutes() < 30) ) return 'HC';
+    if ( (date.getHours() === 22) && (date.getMinutes() > 29) ) return 'HC';
+    if ( date.getHours() > 22 ) return 'HC';
+
+    return 'HP';
 }
 
 
