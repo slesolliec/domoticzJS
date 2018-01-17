@@ -1,5 +1,6 @@
 {
   "domoticz":"http://your.domoticz.server:port",
   "username":"yourUsername",
-  "password":"yourPassword"
+  "password":"yourPassword",
+  "GoogleSheetID": "blahblah"
 }
