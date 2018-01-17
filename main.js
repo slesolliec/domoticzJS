@@ -3,14 +3,11 @@
 // todo:    gone functionality
 // todo:    count heating minutes + upload to Google sheet
 
-
-
 const https = require("http");
 const fs    = require("fs");
 
 // loading configs
-var configs = fs.readFileSync("configs.json");
-configs = JSON.parse(configs);
+const configs = JSON.parse( fs.readFileSync("configs.json") );
 
 const now = new Date();
 console.log('---- ' + now.getHours() + ':' + now.getMinutes() + ' ----' );
@@ -25,9 +22,9 @@ const url = configs.domoticz
     + "&password=" + Buffer( configs.password ).toString('base64');
 // console.log(url);
 
-var tempData      = '';
-var switchesData  = '';
-var heaters = {
+let tempData      = '';
+let switchesData  = '';
+const heaters = {
     'Bed'    : '-',
     'Living' : '-',
     'Bath'   : '-',
@@ -54,15 +51,15 @@ function getSwitchesStatus() {
             // console.log(switchesData);
             switchesData = JSON.parse(switchesData);
             switchesData.result.forEach( function (mySwitch) {
-                var room = mySwitch.Name.replace('Heater','');
+                let room = mySwitch.Name.replace('Heater','');
                 heaters[room] = mySwitch.Data;
                 // console.log( mySwitch.Name + ' is ' + mySwitch.Data + ' ( idx = ' + mySwitch.idx + ')'  );
 
                 // we switch off the buttons after two hours
                 if (mySwitch.Name.substr(0,4) === 'TC1B') {
                     if (mySwitch.Data === 'On') {
-                        var lastUpdate = new Date(mySwitch.LastUpdate);
-                        var lastUpdateInMinutes = Math.round( (now - lastUpdate) / 1000 / 60 );
+                        let lastUpdate = new Date(mySwitch.LastUpdate);
+                        let lastUpdateInMinutes = Math.round( (now - lastUpdate) / 1000 / 60 );
                         // console.log("Remote Control Button " + mySwitch.Name + " clicked " + lastUpdateInMinutes + " minutes ago");
                         if (lastUpdateInMinutes > 120) {
                             // we switch off the remote control button
@@ -94,8 +91,8 @@ function getTemperatures() {
 
 
 function manageHeater (thermometer) {
-    var room       = thermometer.Name.substring(4);
-    var wantedTemp = getWantedTemp(room, houseState);
+    let room       = thermometer.Name.substring(4);
+    let wantedTemp = getWantedTemp(room, houseState);
 
     if (thermometer.Temp < wantedTemp) {
         console.log( constantLength( room ) + " is cold: " + thermometer.Temp + '/' + wantedTemp );
@@ -137,8 +134,8 @@ function manageHeater (thermometer) {
 
 
 function constantLength ( str ) {
-    var size = str.length;
-    for ( var i = size ; i < 7 ; i++) {
+    let size = str.length;
+    for ( let i = size ; i < 7 ; i++) {
         str += ' ';
     }
     return str;
@@ -232,7 +229,7 @@ function getState( now ) {
 
 
 function getWantedTemp( room, state) {
-    var wanted = getBaseWantedTemp( room, state);
+    let wanted = getBaseWantedTemp( room, state);
 
     // add some warmth with Remote Control
     switch ( room ) {
