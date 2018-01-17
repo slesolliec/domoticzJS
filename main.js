@@ -31,8 +31,10 @@ const url = configs.domoticz
     + "&password=" + new Buffer( configs.password ).toString('base64');
 // console.log(url);
 
-let tempData      = '';
-let switchesData  = '';
+let tempData      = '';   // this stores the temperatures
+let switchesData  = '';   // this stores the switches states
+
+// data for all the heaters
 const heaters = {
     'Bed'    : '-',
     'Living' : '-',
@@ -40,19 +42,29 @@ const heaters = {
     'Kitchen': '-'
 };
 
-// gives the idx of certain devices
+// gives the idx of certain devices so we can send the commands to the right device
 const devices = {
     'TC1B1': 20,
     'TC1B2': 29,
     'TC1B3': 25
 };
 
+// this does it all
 getSwitchesStatus();
 
+// here the main flow is finished.
+// all that follows is just function definitions
 
 
-// get switch states from Domoticz
+
+// 1. get switch states from Domoticz
+// 2. from that, put the heater states into heater
+// 3. compute the number of minutes of power on
+// remark: for all heater whose chacon module is plugged to the pilot thread, Off = heater is on
+// only the Bathroom has On = heater is on
+// 4. we send the switch commands to Domoticz
 function getSwitchesStatus() {
+    //get the light/switches data
     https.get(url + '&type=devices&used=true&filter=light', function(res) {
         res.setEncoding("utf8");
         res.on("data", function(data) { switchesData += data; });
@@ -60,11 +72,12 @@ function getSwitchesStatus() {
             // console.log(switchesData);
             switchesData = JSON.parse(switchesData);
             switchesData.result.forEach( function (mySwitch) {
+                // for each switch we read the state
                 let room = mySwitch.Name.replace('Heater','');
                 heaters[room] = mySwitch.Data;
                 // console.log( mySwitch.Name + ' is ' + mySwitch.Data + ' ( idx = ' + mySwitch.idx + ')'  );
 
-                // conso metering
+                // we add the number of minutes each heater has been on (in state)
                 switch ( room ) {
                     case 'Bed':
                     case 'Kitchen':
@@ -80,14 +93,14 @@ function getSwitchesStatus() {
                         break;
                 }
 
-                // we switch off the buttons after two hours
+                // we automatically switch off the remote control buttons after two hours
                 if (mySwitch.Name.substr(0,4) === 'TC1B') {
                     if (mySwitch.Data === 'On') {
                         let lastUpdate = new Date(mySwitch.LastUpdate);
                         let lastUpdateInMinutes = Math.round( (now - lastUpdate) / 1000 / 60 );
                         // console.log("Remote Control Button " + mySwitch.Name + " clicked " + lastUpdateInMinutes + " minutes ago");
                         if (lastUpdateInMinutes > 120) {
-                            // we switch off the remote control button
+                            // we send the command to switch off the remote control button to domoticz
                             https.get(url + '&type=command&param=switchlight&idx=' + devices[mySwitch.Name] + '&switchcmd=Off');
                             console.log("Shut down Remote Control Button " + mySwitch.Name + " after 2 hours");
                         }
@@ -96,15 +109,17 @@ function getSwitchesStatus() {
 
             });
 
-            // update last update
+            // update last update in the state and save it to disk
             state.lastUpdate = now.toISOString();
             fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
-            console.log( state );
+            // console.log( state );
 
+            // let's follow by requesting the temperatures
             getTemperatures();
         });
     });
 }
+
 
 function getTemperatures() {
 // get temperatures from Domoticz
@@ -114,18 +129,22 @@ function getTemperatures() {
         res.on("end",  function() {
             // console.log(body);
             tempData = JSON.parse(tempData);
+            // for each temperature received, we call manageHeater
             tempData.result.forEach( manageHeater )
         });
     });
 }
 
 
-
+// that is the function that decides who to switch on or off
 function manageHeater (thermometer) {
+    // we get the room from the name of the device: tempBed -> Bed
     let room       = thermometer.Name.substring(4);
+    // we get the wanted temperature for that room knowing the status of the home (day, night, out, ...)
     let wantedTemp = getWantedTemp(room, houseStatus);
 
     if (thermometer.Temp < wantedTemp) {
+        // it's too cold: we turn heater on if not already on
         console.log( constantLength( room ) + " is cold: " + thermometer.Temp + '/' + wantedTemp );
         if ( room === 'Bath' ) {
             if ( heaters[room] === 'Off')   switchOn( room );
@@ -134,6 +153,7 @@ function manageHeater (thermometer) {
         }
 
     } else if (thermometer.Temp > wantedTemp) {
+        // it's too how: we turn heater off if not already off
         console.log( constantLength( room ) + " is hot : " + thermometer.Temp + '/' + wantedTemp);
         if ( room === 'Bath' ) {
             if ( heaters[room] === 'On')    switchOff( room );
@@ -144,15 +164,16 @@ function manageHeater (thermometer) {
         console.log( constantLength( room ) + " is ok  : " + thermometer.Temp + '/' + wantedTemp);
     }
 
-    // resend command every quarter if necessary
+    // sometimes, the chacom miss an order sent by the RFXCom
+    // so we resend command every quarter if necessary
     if (now.getMinutes() % 15 === 0) {
-        if (thermometer.Temp < wantedTemp - 0.25) {
+        if (thermometer.Temp < wantedTemp - 0.3) {
             if ( room === 'Bath' ) {
                 if ( heaters[room] === 'On')   switchOn( room );
             } else {
                 if ( heaters[room] === 'Off')  switchOn( room );
             }
-        } else if (thermometer.Temp > wantedTemp + 0.25) {
+        } else if (thermometer.Temp > wantedTemp + 0.3) {
             if ( room === 'Bath' ) {
                 if ( heaters[room] === 'Off')  switchOff( room );
             } else {
@@ -163,7 +184,7 @@ function manageHeater (thermometer) {
 
 }
 
-
+// stupid formatting function to get nicely aligned logs
 function constantLength ( str ) {
     let size = str.length;
     for ( let i = size ; i < 7 ; i++) {
@@ -173,6 +194,9 @@ function constantLength ( str ) {
 }
 
 
+// we send the order to turn heaters on
+// as most of the heaters are pluggen on the chacom module via the pilot thread,
+// setting the chacom on ON turns off the heater.
 function switchOn( room ) {
     console.log( now.getHours() + ':' + now.getMinutes() + " Switch " + room + " ON");
 
@@ -196,7 +220,7 @@ function switchOn( room ) {
 
 }
 
-
+// same as above, but with off
 function switchOff( room ) {
     console.log( now.getHours() + ':' + now.getMinutes() + " Switch " + room + " OFF");
 
@@ -227,6 +251,7 @@ function getState( now ) {
 
     // Gone?
     // todo: test if we are all gone
+    // todo: ping cellphones or computers as a presence indicator
 
     // Home day or Work day?
     switch ( now.getDay() ) {
@@ -259,7 +284,8 @@ function getState( now ) {
 }
 
 // Heures Pleines ou Heures Creuses?
-// This is a French specific parameter to some electricity subscription: from 22:30 to 06:30, power is cheaper
+// This is a French specific parameter to some electricity subscriptions:
+//      from 22:30 to 06:30, power is slightly cheaper
 function getHCHP ( date ) {
     if ( date.getHours() < 6)   return 'HC';
     if ( (date.getHours() === 6)  && (date.getMinutes() < 30) ) return 'HC';
@@ -269,11 +295,12 @@ function getHCHP ( date ) {
     return 'HP';
 }
 
-
+// get the wanted temperature given the room and the state of the house
 function getWantedTemp( room, state) {
+    // we get the normal wanted temp
     let wanted = getBaseWantedTemp( room, state);
 
-    // add some warmth with Remote Control
+    // but we can add some warmth with our Remote Control
     switch ( room ) {
         case 'Kitchen':  if (heaters.TC1B1 === 'On')   wanted += 1;   break;
         case 'Living' :  if (heaters.TC1B2 === 'On')   wanted += 1;   break;
@@ -291,7 +318,8 @@ function getWantedTemp( room, state) {
     return wanted;
 }
 
-
+// this is the wanted temp in each room without the remote control command
+// and without the special scenario for the Bathroom
 function getBaseWantedTemp ( room, state ) {
 
     if (state === 'gone')  return 12;
@@ -305,10 +333,11 @@ function getBaseWantedTemp ( room, state ) {
         case 'Bath':     return 21;
 
         case 'Living':
-            if ( now.getHours() < 12 ) {
+            if ( now.getHours() < 10 ) {
                 return 17;
             } else {
                 return 18;
             }
     }
 }
+
