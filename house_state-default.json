@@ -1,0 +1,9 @@
+{
+  "lastUpdate": "2018-01-17T11:52:39.168Z",
+
+  "Bed":     { "HC": 0, "HP": 0 },
+  "Kitchen": { "HC": 0, "HP": 0 },
+  "Living":  { "HC": 0, "HP": 0 },
+  "Bath":    { "HC": 0, "HP": 0 }
+}
+

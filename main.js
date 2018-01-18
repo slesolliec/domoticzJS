@@ -1,7 +1,6 @@
 "use strict";
 
 // todo:    gone functionality
-// todo:    upload to Google sheet
 
 const https = require("http");
 const fs    = require("fs");
@@ -346,44 +345,100 @@ function getBaseWantedTemp ( room, state ) {
 //  At last some good tuto for accessing Google Sheets with node
 //   https://www.twilio.com/blog/2017/03/google-spreadsheets-and-javascriptnode-js.html
 function uploadToGoogleSheet() {
-    var GoogleSpreadsheet = require('google-spreadsheet');
-    var creds = require('./client-secret');
+
+    // this should only do something once every hour
+    if (now.getMinutes() !== 0)
+        return;
+
+    const GoogleSpreadsheet = require('google-spreadsheet');
+    const creds = require('./client-secret');
 
     // Create a document object using the ID of the spreadsheet - obtained from its URL.
-    var doc = new GoogleSpreadsheet(configs.GoogleSheetID);
+    const doc = new GoogleSpreadsheet(configs.GoogleSheetID);
 
     // Authenticate with the Google Spreadsheets API.
     doc.useServiceAccountAuth(creds, function (err) {
 
-        /* Get all of the rows from the spreadsheet.
-        doc.getRows(1, function (err, rows) {
-            console.log(rows);
-        });
-        */
-
-//        var sheet;
-
         // Get infos and worksheets
         doc.getInfo( function(err, info) {
             console.log('Loaded doc: '+info.title+' by '+info.author.email);
-            var sheet = info.worksheets[1];
+            const sheet = info.worksheets[1];
             console.log('sheet 1: '+sheet.title+' '+sheet.rowCount+'x'+sheet.colCount);
 
-            // Get a cell
+            // Get today's cells
+            const myRow = 2 + now.getDayOfYear() ;
+
             sheet.getCells({
-                'min-row': 5,
-                'max-row': 6,
-                'min-col': 4,
-                'max-col': 5,
+                'min-row': myRow,
+                'max-row': myRow,
+                'min-col': 2,
+                'max-col': 16,
                 'return-empty': true
             }, function(err, cells) {
-                console.log('Cell R' + cells[0].row + ' C' + cells[0].col + ' = ' + cells[0].value);
-                console.log('Cell R' + cells[1].row + ' C' + cells[1].col + ' = ' + cells[1].value);
-                console.log('Cell R' + cells[2].row + ' C' + cells[2].col + ' = ' + cells[2].value);
-                console.log('Cell R' + cells[3].row + ' C' + cells[3].col + ' = ' + cells[3].value);
+
+                // we display what is in the cells
+                cells.forEach( function (oneCell) {
+                    console.log('Cell R' + oneCell.row + ' C' + oneCell.col + ' = ' + oneCell.value);
+                });
+
+                // we write the new cell's values
+                if ( now.getHours() < 10) {
+                    // we don't update HC after 10:00
+                    if (state.Bed.HC     !== 0) cells[1].value  = state.Bed.HC;
+                    if (state.Living.HC  !== 0) cells[5].value  = state.Living.HC;
+                    if (state.Kitchen.HC !== 0) cells[9].value  = state.Kitchen.HC;
+                    if (state.Bath.HC    !== 0) cells[13].value = state.Bath.HC;
+                }
+
+                if (state.Bed.HP     !== 0) cells[2].value  = state.Bed.HP;
+                if (state.Living.HP  !== 0) cells[6].value  = state.Living.HP;
+                if (state.Kitchen.HP !== 0) cells[10].value = state.Kitchen.HP;
+                if (state.Bath.HP    !== 0) cells[14].value = state.Bath.HP;
+
+                sheet.bulkUpdateCells(cells, function(err) {
+                    // block zeroing values if we got an error
+                    if (err != null) throw err;
+
+                    // we can zero values
+                    if (getHCHP( now ) === 'HC') {
+                        state.Bed.HP     = 0;
+                        state.Living.HP  = 0;
+                        state.Kitchen.HP = 0;
+                        state.Bath.HP    = 0;
+                    } else {
+                        state.Bed.HC     = 0;
+                        state.Living.HC  = 0;
+                        state.Kitchen.HC = 0;
+                        state.Bath.HC    = 0;
+                    }
+
+                    // save state
+                    fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
+                });
+                
+
             })
         });
 
     });
 
 }
+
+
+
+
+Date.prototype.isLeapYear = function() {
+    let year = this.getFullYear();
+    if( (year % 4) !== 0) return false;
+    return ( (year % 100) !== 0 || (year % 400) === 0);
+};
+
+// Get Day of Year
+Date.prototype.getDayOfYear = function() {
+    let dayCount = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+    let mn = this.getMonth();
+    let dn = this.getDate();
+    let dayOfYear = dayCount[mn] + dn;
+    if (mn > 1 && this.isLeapYear()) dayOfYear++;
+    return dayOfYear;
+};
