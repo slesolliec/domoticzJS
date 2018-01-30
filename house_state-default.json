@@ -1,6 +1,6 @@
 {
   "lastUpdate": "2018-01-17T11:52:39.168Z",
-
+  "goneUntil":  "2018-01-31T11:00:00.000Z",
   "Bed":     { "HC": 0, "HP": 0 },
   "Kitchen": { "HC": 0, "HP": 0 },
   "Living":  { "HC": 0, "HP": 0 },

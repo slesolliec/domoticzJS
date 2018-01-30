@@ -11,6 +11,7 @@ const configs = JSON.parse( fs.readFileSync("configs.json") );
 // loading state of the house
 const state   = JSON.parse( fs.readFileSync("house_state.json"));
 const lastStateUpdate = new Date(state.lastUpdate);
+const goneUntil = new Date(state.goneUntil);
 
 // setting current date
 const now = new Date();
@@ -166,19 +167,21 @@ function manageHeater (thermometer) {
 
     // sometimes, the chacom miss an order sent by the RFXCom
     // so we resend command every quarter if necessary
-    if (now.getMinutes() % 15 === 0) {
-        if (thermometer.Temp < wantedTemp - 0.3) {
-            if ( room === 'Bath' ) {
-                if ( heaters[room] === 'On')   switchOn( room );
-            } else {
-                if ( heaters[room] === 'Off')  switchOn( room );
-            }
-        } else if (thermometer.Temp > wantedTemp + 0.3) {
-            if ( room === 'Bath' ) {
-                if ( heaters[room] === 'Off')  switchOff( room );
-            } else {
-                if ( heaters[room] === 'On')   switchOff( room );
-            }
+    if (now.getMinutes() % 15 !== 0) return;
+    // when we are gone, we resent orders only once every 4 hours
+    if ((getState( now ) === 'gone') && (( now.getHours() % 4 !== 0) || ( now.getMinutes() !== 0 )) ) return;
+
+    if (thermometer.Temp < wantedTemp - 0.3) {
+        if ( room === 'Bath' ) {
+            if ( heaters[room] === 'On')   switchOn( room );
+        } else {
+            if ( heaters[room] === 'Off')  switchOn( room );
+        }
+    } else if (thermometer.Temp > wantedTemp + 0.3) {
+        if ( room === 'Bath' ) {
+            if ( heaters[room] === 'Off')  switchOff( room );
+        } else {
+            if ( heaters[room] === 'On')   switchOff( room );
         }
     }
 
@@ -250,6 +253,9 @@ function switchOff( room ) {
 function getState( now ) {
 
     // Gone?
+    if (now < goneUntil) {
+        return 'gone';
+    }
     // todo: test if we are all gone
     // todo: ping cellphones or computers as a presence indicator
 
