@@ -6,10 +6,10 @@ const https = require("http");
 const fs    = require("fs");
 
 // loading configs
-const configs = JSON.parse( fs.readFileSync("configs.json") );
+const configs = JSON.parse( fs.readFileSync("/Users/stephane/node/domoticzJS/configs.json") );
 
 // loading state of the house
-const state   = JSON.parse( fs.readFileSync("house_state.json"));
+const state   = JSON.parse( fs.readFileSync("/Users/stephane/node/domoticzJS/house_state.json"));
 const lastStateUpdate = new Date(state.lastUpdate);
 const goneUntil = new Date(state.goneUntil);
 
@@ -80,13 +80,13 @@ function getSwitchesStatus() {
                 // we add the number of minutes each heater has been on (in state)
                 switch ( room ) {
                     case 'Bed':
-                    case 'Kitchen':
                     case 'Living':
                         if (mySwitch.Data === 'Off') {
                             state[room][getHCHP( now )] += minSinceLastRun;
                         }
                         break;
                     case 'Bath':
+                    case 'Kitchen':
                         if (mySwitch.Data === 'On') {
                             state[room][getHCHP( now )] += minSinceLastRun;
                         }
@@ -147,7 +147,7 @@ function manageHeater (thermometer) {
     if (thermometer.Temp < wantedTemp) {
         // it's too cold: we turn heater on if not already on
         console.log( constantLength( room ) + " is cold: " + thermometer.Temp + '/' + wantedTemp );
-        if ( room === 'Bath' ) {
+        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
             if ( heaters[room] === 'Off')   switchOn( room );
         } else {
             if ( heaters[room] === 'On')    switchOn( room );
@@ -156,7 +156,7 @@ function manageHeater (thermometer) {
     } else if (thermometer.Temp > wantedTemp) {
         // it's too how: we turn heater off if not already off
         console.log( constantLength( room ) + " is hot : " + thermometer.Temp + '/' + wantedTemp);
-        if ( room === 'Bath' ) {
+        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
             if ( heaters[room] === 'On')    switchOff( room );
         } else {
             if ( heaters[room] === 'Off')   switchOff( room );
@@ -172,13 +172,13 @@ function manageHeater (thermometer) {
     if ((getState( now ) === 'gone') && (( now.getHours() % 4 !== 0) || ( now.getMinutes() !== 0 )) ) return;
 
     if (thermometer.Temp < wantedTemp - 0.3) {
-        if ( room === 'Bath' ) {
+        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
             if ( heaters[room] === 'On')   switchOn( room );
         } else {
             if ( heaters[room] === 'Off')  switchOn( room );
         }
     } else if (thermometer.Temp > wantedTemp + 0.3) {
-        if ( room === 'Bath' ) {
+        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
             if ( heaters[room] === 'Off')  switchOff( room );
         } else {
             if ( heaters[room] === 'On')   switchOff( room );
@@ -208,7 +208,7 @@ function switchOn( room ) {
             https.get(url + '&type=command&param=switchlight&idx=3&switchcmd=Off');
             break;
         case 'Kitchen':
-            https.get(url + '&type=command&param=switchlight&idx=30&switchcmd=Off');
+            https.get(url + '&type=command&param=switchlight&idx=30&switchcmd=On');
             https.get(url + '&type=command&param=switchlight&idx=36&switchcmd=On');
             break;
         case 'Living':
@@ -232,7 +232,7 @@ function switchOff( room ) {
             https.get(url + '&type=command&param=switchlight&idx=3&switchcmd=On');
             break;
         case 'Kitchen':
-            https.get(url + '&type=command&param=switchlight&idx=30&switchcmd=On');
+            https.get(url + '&type=command&param=switchlight&idx=30&switchcmd=Off');
             https.get(url + '&type=command&param=switchlight&idx=36&switchcmd=Off');
             break;
         case 'Living':
@@ -419,7 +419,7 @@ function uploadToGoogleSheet() {
                     }
 
                     // save state
-                    fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
+                    fs.writeFile("/Users/stephane/node/domoticzJS/house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
                 });
                 
 
