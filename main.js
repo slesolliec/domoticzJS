@@ -1,15 +1,15 @@
 "use strict";
 
-// todo:    gone functionality
-
 const https = require("http");
 const fs    = require("fs");
 
+require("./datetime-helpers.js");
+
 // loading configs
-const configs = JSON.parse( fs.readFileSync("/Users/stephane/node/domoticzJS/configs.json") );
+const configs = JSON.parse( fs.readFileSync("configs.json") );
 
 // loading state of the house
-const state   = JSON.parse( fs.readFileSync("/Users/stephane/node/domoticzJS/house_state.json"));
+const state   = JSON.parse( fs.readFileSync(configs.root + "house_state.json"));
 const lastStateUpdate = new Date(state.lastUpdate);
 const goneUntil = new Date(state.goneUntil);
 
@@ -23,6 +23,12 @@ const minSinceLastRun = Math.round( (now - lastStateUpdate) / 1000 / 60 );
 // get status of the house
 const houseStatus = getState( now );
 console.log("houseState : " + houseStatus);
+
+// we exit if we cannot load wanted temperatures
+if ( ! fs.existsSync( configs.root + 'wantedTemps/' + now.stringDate8() + '.json'))
+    return;
+const wantedTemps = JSON.parse( fs.readFileSync( configs.root + 'wantedTemps/' + now.stringDate8() + '.json'));
+
 
 // url of Domoticz JSON API protected by username / password
 const url = configs.domoticz
@@ -329,22 +335,17 @@ function getWantedTemp( room, state) {
 function getBaseWantedTemp ( room, state ) {
 
     if (state === 'gone')  return 12;
-    if (state === 'out')   return 15;
-    if (state === 'night') return 15;
 
-    // only state left is day:
-    switch (room) {
-        case 'Bed':      return 17;
-        case 'Kitchen':  return 18;
-        case 'Bath':     return 21;
+    var now5 = now.stringTime5();
+    var wantedTemp = 12;
 
-        case 'Living':
-            if ( now.getHours() < 10 ) {
-                return 17;
-            } else {
-                return 18;
-            }
+    for (var keyHours in wantedTemps[room]) {
+        if (now5 > keyHours) {
+            wantedTemp = wantedTemps[room][keyHours];
+        }
     }
+
+    return wantedTemp;
 }
 
 
@@ -419,7 +420,7 @@ function uploadToGoogleSheet() {
                     }
 
                     // save state
-                    fs.writeFile("/Users/stephane/node/domoticzJS/house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
+                    fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
                 });
                 
 
@@ -430,21 +431,3 @@ function uploadToGoogleSheet() {
 
 }
 
-
-
-
-Date.prototype.isLeapYear = function() {
-    let year = this.getFullYear();
-    if( (year % 4) !== 0) return false;
-    return ( (year % 100) !== 0 || (year % 400) === 0);
-};
-
-// Get Day of Year
-Date.prototype.getDayOfYear = function() {
-    let dayCount = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-    let mn = this.getMonth();
-    let dn = this.getDate();
-    let dayOfYear = dayCount[mn] + dn;
-    if (mn > 1 && this.isLeapYear()) dayOfYear++;
-    return dayOfYear;
-};
