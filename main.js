@@ -314,17 +314,9 @@ function getWantedTemp( room, state) {
 
     // but we can add some warmth with our Remote Control
     switch ( room ) {
-        case 'Kitchen':  if (heaters.TC1B1 === 'On')   wanted += 1;   break;
-        case 'Living' :  if (heaters.TC1B2 === 'On')   wanted += 1;   break;
-        case 'Bed'    :  if (heaters.TC1B3 === 'On')   wanted += 2;   break;
-    }
-
-    // special case of Bathroom: heat from 4:30 during the week, switch off at 21:00
-    if (room === 'Bath') {
-        if ( now.getDay() < 6 && now.getDay() > 0 ) {
-            if ( now.getHours() === 4 && now.getMinutes() > 30 )    return 21;
-            if ( now.getHours() === 21 )                            return 15;
-        }
+        case 'Kitchen':  if (heaters.TC1B1 === 'On')   wanted = 1 + Number(wanted);   break;
+        case 'Living' :  if (heaters.TC1B2 === 'On')   wanted = 1 + Number(wanted);   break;
+        case 'Bed'    :  if (heaters.TC1B3 === 'On')   wanted = 2 + Number(wanted);   break;
     }
 
     return wanted;
