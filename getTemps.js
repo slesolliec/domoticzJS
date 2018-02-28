@@ -87,7 +87,7 @@ function getTempsFromGoogleSheet() {
                 console.log(temps);
 
                 // save temps
-                fs.writeFile("wantedTemps/" + now.stringDate8() + ".json", JSON.stringify(temps), function(err){ if(err) throw err; } );
+                fs.writeFile( configs.root + "wantedTemps/" + now.stringDate8() + ".json", JSON.stringify(temps), function(err){ if(err) throw err; } );
 
             });
 
