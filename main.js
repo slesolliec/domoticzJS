@@ -15,14 +15,13 @@ const goneUntil = new Date(state.goneUntil);
 
 // setting current date
 const now = new Date();
-console.log('---- ' + now.getHours() + ':' + now.getMinutes() + ' ----');
 
 const minSinceLastRun = Math.round( (now - lastStateUpdate) / 1000 / 60 );
 // console.log(' Minutes since last run: ' + minSinceLastRun);
 
 // get status of the house
 const houseStatus = getState( now );
-console.log("houseState : " + houseStatus);
+say("houseState : " + houseStatus);
 
 // we exit if we cannot load wanted temperatures
 if ( ! fs.existsSync( configs.root + 'wantedTemps/' + now.stringDate8() + '.json'))
@@ -108,7 +107,7 @@ function getSwitchesStatus() {
                         if (lastUpdateInMinutes > 120) {
                             // we send the command to switch off the remote control button to domoticz
                             https.get(url + '&type=command&param=switchlight&idx=' + devices[mySwitch.Name] + '&switchcmd=Off');
-                            console.log("Shut down Remote Control Button " + mySwitch.Name + " after 2 hours");
+                            say("Shut down Remote Control Button " + mySwitch.Name + " after 2 hours");
                         }
                     }
                 }
@@ -152,7 +151,7 @@ function manageHeater (thermometer) {
 
     if (thermometer.Temp < wantedTemp) {
         // it's too cold: we turn heater on if not already on
-        console.log( constantLength( room ) + " is cold: " + thermometer.Temp + '/' + wantedTemp );
+        say( constantLength( room ) + " is cold: " + thermometer.Temp + '/' + wantedTemp );
         if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
             if ( heaters[room] === 'Off')   switchOn( room );
         } else {
@@ -161,14 +160,14 @@ function manageHeater (thermometer) {
 
     } else if (thermometer.Temp > wantedTemp) {
         // it's too how: we turn heater off if not already off
-        console.log( constantLength( room ) + " is hot : " + thermometer.Temp + '/' + wantedTemp);
+        say( constantLength( room ) + " is hot : " + thermometer.Temp + '/' + wantedTemp);
         if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
             if ( heaters[room] === 'On')    switchOff( room );
         } else {
             if ( heaters[room] === 'Off')   switchOff( room );
         }
     } else {
-        console.log( constantLength( room ) + " is ok  : " + thermometer.Temp + '/' + wantedTemp);
+        say( constantLength( room ) + " is ok  : " + thermometer.Temp + '/' + wantedTemp);
     }
 
     // sometimes, the chacom miss an order sent by the RFXCom
@@ -207,7 +206,7 @@ function constantLength ( str ) {
 // as most of the heaters are pluggen on the chacom module via the pilot thread,
 // setting the chacom on ON turns off the heater.
 function switchOn( room ) {
-    console.log( now.getHours() + ':' + now.getMinutes() + " Switch " + room + " ON");
+    say( "Switch " + room + " ON");
 
     switch ( room ) {
         case 'Bed':
@@ -231,7 +230,7 @@ function switchOn( room ) {
 
 // same as above, but with off
 function switchOff( room ) {
-    console.log( now.getHours() + ':' + now.getMinutes() + " Switch " + room + " OFF");
+    say( "Switch " + room + " OFF");
 
     switch (room) {
         case 'Bed':
@@ -314,9 +313,9 @@ function getWantedTemp( room, state) {
 
     // but we can add some warmth with our Remote Control
     switch ( room ) {
-        case 'Kitchen':  if (heaters.TC1B1 === 'On')   wanted = 1 + Number(wanted);   break;
-        case 'Living' :  if (heaters.TC1B2 === 'On')   wanted = 1 + Number(wanted);   break;
-        case 'Bed'    :  if (heaters.TC1B3 === 'On')   wanted = 2 + Number(wanted);   break;
+        case 'Kitchen':  if (heaters.TC1B1 === 'On')   wanted += 1;   break;
+        case 'Living' :  if (heaters.TC1B2 === 'On')   wanted += 1;   break;
+        case 'Bed'    :  if (heaters.TC1B3 === 'On')   wanted += 2;   break;
     }
 
     return wanted;
@@ -337,7 +336,7 @@ function getBaseWantedTemp ( room, state ) {
         }
     }
 
-    return wantedTemp;
+    return Number(wantedTemp);
 }
 
 
@@ -423,3 +422,8 @@ function uploadToGoogleSheet() {
 
 }
 
+
+// display time + message
+function say(msg) {
+    console.log( now.stringTime5() + ' ' + msg);
+}
