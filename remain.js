@@ -1,31 +1,31 @@
 "use strict";
 
-const https = require("http");
-const fs    = require("fs");
+// this is an example of an application using the DomoticzJS module
+// Because it is only active a few seconds per minutes,
+// it is supposed to run as a cron job in order to eat as few ram as possible.
 
+
+const https = require("http");
+// const fs    = require("fs");
+
+// load main module
 const domoJS = require("./index");
 
-domoJS.say("Hello");
+// load configs (put that file where it suits you)
+domoJS.loadConfigs( __dirname + '/configs.json');
+
+// load house state (put that file where you want)
+domoJS.loadState( __dirname + '/house_state.json');
+
+// domoJS.say("Hello");
 exit;
 
 
-require("./datetime-helpers.js");
-
-// loading configs
-const configs = JSON.parse( fs.readFileSync("/home/stephane/WebstormProjects/domo/configs.json") );
-
 // loading state of the house
-const state   = JSON.parse( fs.readFileSync(configs.root + "house_state.json"));
 const lastStateUpdate = new Date(state.lastUpdate);
-const goneUntil = new Date(state.goneUntil);
-
-
 const minSinceLastRun = Math.round( (now - lastStateUpdate) / 1000 / 60 );
 // console.log(' Minutes since last run: ' + minSinceLastRun);
 
-// get status of the house
-const houseStatus = getState( now );
-say("houseState : " + houseStatus);
 
 // we exit if we cannot load wanted temperatures
 if ( ! fs.existsSync( configs.root + 'wantedTemps/' + now.stringDate8() + '.json'))
@@ -257,47 +257,6 @@ function switchOff( room ) {
 }
 
 
-
-// we get the state of the house: night, out, day, gone
-function getState( now ) {
-
-    // Gone?
-    if (now < goneUntil) {
-        return 'gone';
-    }
-    // todo: test if we are all gone
-    // todo: ping cellphones or computers as a presence indicator
-
-    // Home day or Work day?
-    switch ( now.getDay() ) {
-        case 1:
-        case 2:
-        case 4:
-            // working days
-            if ((now.getHours() < 5 ) || (now.getHours() > 21) || (now.getHours() === 21) && (now.getMinutes() > 30))
-                return 'night';
-
-            if ((now.getHours() > 7 ) || (now.getHours() === 7) && (now.getMinutes() > 30))
-                if (now.getHours() < 17 )
-                    return 'out';
-            break;
-
-        case 3:
-        case 5:
-            // normal day: heat from 5:30 to 22:00
-            if ((now.getHours() < 5 ) || (now.getHours() === 5 ) && (now.getMinutes() > 30 ) || (now.getHours() > 21))
-                return 'night';
-            break;
-
-        default:
-            // week-end:   heat from 8:00 to 22:00
-            if ((now.getHours() < 8 ) || (now.getHours() > 21))
-                return 'night';
-    }
-
-    return 'day';
-}
-
 // Heures Pleines ou Heures Creuses?
 // This is a French specific parameter to some electricity subscriptions:
 //      from 22:30 to 06:30, power is slightly cheaper
@@ -426,8 +385,3 @@ function uploadToGoogleSheet() {
 
 }
 
-
-// display time + message
-function say(msg) {
-    console.log( now.stringTime5() + ' ' + msg);
-}
