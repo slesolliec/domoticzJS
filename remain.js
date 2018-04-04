@@ -17,8 +17,23 @@ domoJS.loadConfigs( __dirname + '/configs.json');
 // load house state (put that file where you want)
 domoJS.loadState( __dirname + '/house_state.json');
 
+// load wanted temperatures
+domoJS.loadWantedTemps( __dirname + '/wanted_temperatures.json');
+
+domoJS.updateSwitchesStatus();
+
+return;
+
+// compute consumption ?? and update Calc sheet ??
+
+// fetch temperatures ??
+
+// take actions ??
+
+// save down state ??
+
+
 // domoJS.say("Hello");
-exit;
 
 
 // loading state of the house
@@ -26,19 +41,6 @@ const lastStateUpdate = new Date(state.lastUpdate);
 const minSinceLastRun = Math.round( (now - lastStateUpdate) / 1000 / 60 );
 // console.log(' Minutes since last run: ' + minSinceLastRun);
 
-
-// we exit if we cannot load wanted temperatures
-if ( ! fs.existsSync( configs.root + 'wantedTemps/' + now.stringDate8() + '.json'))
-    return;
-const wantedTemps = JSON.parse( fs.readFileSync( configs.root + 'wantedTemps/' + now.stringDate8() + '.json'));
-
-
-// url of Domoticz JSON API protected by username / password
-const url = configs.domoticz
-    + "/json.htm"
-    + "?username=" + new Buffer( configs.username ).toString('base64')
-    + "&password=" + new Buffer( configs.password ).toString('base64');
-// console.log(url);
 
 let tempData      = '';   // this stores the temperatures
 let switchesData  = '';   // this stores the switches states
@@ -66,69 +68,6 @@ getSwitchesStatus();
 
 
 
-// 1. get switch states from Domoticz
-// 2. from that, put the heater states into heater
-// 3. compute the number of minutes of power on
-// remark: for all heater whose chacon module is plugged to the pilot thread, Off = heater is on
-// only the Bathroom has On = heater is on
-// 4. we send the switch commands to Domoticz
-function getSwitchesStatus() {
-    //get the light/switches data
-    https.get(url + '&type=devices&used=true&filter=light', function(res) {
-        res.setEncoding("utf8");
-        res.on("data", function(data) { switchesData += data; });
-        res.on("end",  function() {
-            // console.log(switchesData);
-            switchesData = JSON.parse(switchesData);
-            switchesData.result.forEach( function (mySwitch) {
-                // for each switch we read the state
-                let room = mySwitch.Name.replace('Heater','');
-                heaters[room] = mySwitch.Data;
-                // console.log( mySwitch.Name + ' is ' + mySwitch.Data + ' ( idx = ' + mySwitch.idx + ')'  );
-
-                // we add the number of minutes each heater has been on (in state)
-                switch ( room ) {
-                    case 'Bed':
-                    case 'Living':
-                        if (mySwitch.Data === 'Off') {
-                            state[room][getHCHP( now )] += minSinceLastRun;
-                        }
-                        break;
-                    case 'Bath':
-                    case 'Kitchen':
-                        if (mySwitch.Data === 'On') {
-                            state[room][getHCHP( now )] += minSinceLastRun;
-                        }
-                        break;
-                }
-
-                // we automatically switch off the remote control buttons after two hours
-                if (mySwitch.Name.substr(0,4) === 'TC1B') {
-                    if (mySwitch.Data === 'On') {
-                        let lastUpdate = new Date(mySwitch.LastUpdate);
-                        let lastUpdateInMinutes = Math.round( (now - lastUpdate) / 1000 / 60 );
-                        // console.log("Remote Control Button " + mySwitch.Name + " clicked " + lastUpdateInMinutes + " minutes ago");
-                        if (lastUpdateInMinutes > 120) {
-                            // we send the command to switch off the remote control button to domoticz
-                            https.get(url + '&type=command&param=switchlight&idx=' + devices[mySwitch.Name] + '&switchcmd=Off');
-                            say("Shut down Remote Control Button " + mySwitch.Name + " after 2 hours");
-                        }
-                    }
-                }
-
-            });
-
-            // update last update in the state and save it to disk
-            state.lastUpdate = now.toISOString();
-            fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
-            uploadToGoogleSheet();
-            // console.log( state );
-
-            // let's follow by requesting the temperatures
-            getTemperatures();
-        });
-    });
-}
 
 
 function getTemperatures() {

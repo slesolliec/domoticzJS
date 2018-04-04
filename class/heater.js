@@ -2,13 +2,13 @@
 
 var heater = {};
 
+heater.name      = '';
+heater.devIdx    = null;
 heater.state     = 'Off';
 heater.HC        = 0;
 heater.HP        = 0;
 heater.nbHitsOn  = 0;
 heater.nbHitsOff = 0;
-heater.name      = '';
-heater.devIdx    = null;
 
 function dumpfield( item, index) {
     console.log( index + ' = ' + item);

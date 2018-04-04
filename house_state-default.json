@@ -1,9 +1,73 @@
 {
-  "lastUpdate": "2018-01-17T11:52:39.168Z",
-  "goneUntil":  "2018-01-31T11:00:00.000Z",
-  "Bed":     { "HC": 0, "HP": 0 },
-  "Kitchen": { "HC": 0, "HP": 0 },
-  "Living":  { "HC": 0, "HP": 0 },
-  "Bath":    { "HC": 0, "HP": 0 }
+    "lastUpdate": "2018-01-17T11:52:39.168Z",
+    "rooms": {
+        "Kitchen": {
+            "name":   "Kitchen",
+            "idx":    2,
+            "wantedTemp": 18,
+            "heaters": {
+                "30": {
+                    "name":     "HeatKitchen",
+                    "devIdx":    30,
+                    "state":     "Off",
+                    "HC":         0,
+                    "HP":         0,
+                    "nbHitsOn":   0,
+                    "nbHitsOff":  0,
+                    "power":   1000
+                },
+                "36": {
+                    "name":     "HeatchenSmall",
+                    "devIdx":    36,
+                    "state":     "Off",
+                    "HC":         0,
+                    "HP":         0,
+                    "nbHitsOn":   0,
+                    "nbHitsOff":  0,
+                    "power":   1000
+                }
+            }
+        },
+
+        "Living": {
+            "name":   "Living",
+            "idx":    3,
+            "wantedTemp": 19,
+            "heaters": {
+                "HeaterLiving": {
+                    "name":     "Heaterg",
+                    "devIdx":    13,
+                    "state":     "Off",
+                    "HC":         0,
+                    "HP":         0,
+                    "nbHitsOn":   0,
+                    "nbHitsOff":  0,
+                    "power":   1000
+                },
+                "HeaterLivingChimney": {
+                    "name":     "HeateringChimney",
+                    "devIdx":    12,
+                    "state":     "Off",
+                    "HC":         0,
+                    "HP":         0,
+                    "nbHitsOn":   0,
+                    "nbHitsOff":  0,
+                    "power":   1000
+                },
+                "HeaterLivingCorridor": {
+                    "name":     "HeingCorridor",
+                    "devIdx":    37,
+                    "state":     "Off",
+                    "HC":         0,
+                    "HP":         0,
+                    "nbHitsOn":   0,
+                    "nbHitsOff":  0,
+                    "power":   1000
+                }
+            }
+        }
+
+
+    }
 }
 
