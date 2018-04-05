@@ -6,7 +6,7 @@ const fs    = require("fs");
 require("./datetime-helpers.js");
 
 // loading configs
-const configs = JSON.parse( fs.readFileSync("configs.json") );
+const configs = JSON.parse( fs.readFileSync("/home/stephane/WebstormProjects/domo/configs.json") );
 
 // loading state of the house
 const state   = JSON.parse( fs.readFileSync(configs.root + "house_state.json"));

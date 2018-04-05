@@ -4,11 +4,11 @@
  */
 
 const fs      = require("fs");
-const myDate  = require('./class/date');
+const MyDate  = require('./class/date');
 const domoAPI = require('./class/domoticzAPI');
 
 // setting current date
-const now = new myDate();
+const now = new MyDate();
 let configs;
 let state;
 let wantedTemps;
@@ -30,6 +30,23 @@ function loadConfigs( path ) {
 function loadState( path ) {
     state = JSON.parse( fs.readFileSync( path ) );
     state.file = path;
+
+    // make all heaters base objects a heater object
+    forEachHeater( function(heater) {
+        heater.__proto__ = heater.prototype;
+
+    } );
+}
+
+
+/**
+ * Applies the function func to each heater of each room
+ * @param {function} func function to be applied to each heater
+ */
+function forEachHeater( func ) {
+    for ( let room_name in state.rooms )
+        for ( let heater_idx in state.rooms[room_name].heaters )
+            func( state.rooms[room_name].heaters[heater_idx] );
 }
 
 
@@ -37,28 +54,22 @@ function loadWantedTemps( path ) {
     if ( ! fs.existsSync( path ))
         return;
     wantedTemps = JSON.parse( fs.readFileSync( path ));
-    say(" Wanted Temperatures:");
-    console.log(wantedTemps);
+    // say(" Wanted Temperatures:"); console.log(wantedTemps);
 }
 
 
 function processOneSwitchData ( oneSwitch ) {
 
-    // we look for that switch in our state / rooms / heaters
-    for ( let roomname in state.rooms ) {
-        let room = state.rooms[roomname];
+    forEachHeater( function( heater ) {
 
-        for ( let heatername in room.heaters ) {
-            let heater = room.heaters[heatername];
-
-            if ( heater.devIdx == oneSwitch.idx) {
-                // we are on the right heater switch
-                // we copy data
-                heater.name  = oneSwitch.Name;
-                heater.state = oneSwitch.Status;
-            }
+        if ( heater.devIdx == oneSwitch.idx) {
+            // we are on the right heater switch
+            // we copy data
+            heater.name  = oneSwitch.Name;
+            heater.state = oneSwitch.Status;
         }
-    }
+
+    });
 
     return;
 
@@ -85,36 +96,35 @@ function processOneSwitchData ( oneSwitch ) {
 
 function countConsumption() {
 
-    // we update counter
+    console.log(state);
+
+    const lastStateUpdate = new MyDate(state.lastUpdate);
+    const minSinceLastRun = Math.round( (now - lastStateUpdate) / 1000 / 60 );
+    const HCorHP = lastStateUpdate.getHCHP();
+
+    // we add the number of minutes each heater has been on (in state)
     for (let roomname in state.rooms) {
         let room = state.rooms[roomname];
 
         for (let heateridx in room.heaters) {
             let heater = room.heaters[heateridx];
 
+            if ( heater.isInverted() ) {
+                if (heater.state === 'Off') {
+                    heater[HCorHP] += minSinceLastRun;
+                }
+            } else {
+                if (heater.state === 'On') {
+                    heater[HCorHP] += minSinceLastRun;
+                }
+            }
 
+            console.log( heater.name + " is " + heater.state);
         }
     }
 
-
-    // we add the number of minutes each heater has been on (in state)
-    switch ( room ) {
-        case 'Bed':
-        case 'Living':
-            if (mySwitch.Data === 'Off') {
-                state[room][getHCHP( now )] += minSinceLastRun;
-            }
-            break;
-        case 'Bath':
-        case 'Kitchen':
-            if (mySwitch.Data === 'On') {
-                state[room][getHCHP( now )] += minSinceLastRun;
-            }
-            break;
-    }
-
     console.log( state.rooms.Kitchen );
-
+    return;
 }
 
 
@@ -126,7 +136,7 @@ function countConsumption() {
 // 4. we send the switch commands to Domoticz
 function updateSwitchesStatus() {
 
-    domoAPI.getSwitchesInfo( processOneSwitchData, final );
+    domoAPI.getSwitchesInfo( processOneSwitchData, countConsumption );
 
 //    console.log( state.rooms.Kitchen );
 

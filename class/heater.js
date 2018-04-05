@@ -1,53 +1,55 @@
 
+var Heater = {};
 
-var heater = {};
-
-heater.name      = '';
-heater.devIdx    = null;
-heater.state     = 'Off';
-heater.HC        = 0;
-heater.HP        = 0;
-heater.nbHitsOn  = 0;
-heater.nbHitsOff = 0;
+Heater.name      = '';
+Heater.devIdx    = null;
+Heater.state     = 'Off';
+Heater.HC        = 0;
+Heater.HP        = 0;
+Heater.nbHitsOn  = 0;
+Heater.nbHitsOff = 0;
 
 function dumpfield( item, index) {
     console.log( index + ' = ' + item);
 }
-heater.dump      = function() {
+Heater.dump      = function() {
     for (var index in this) {
         dumpfield( this[index], index);
     }
 };
 
 
-heater.switchOn  = function() {
+Heater.switchOn  = function() {
     this.state     = 'On';
     this.nbHitsOff = 0;
     this.nbHitsOn++;
 };
 
 
-heater.switchOff = function() {
+Heater.switchOff = function() {
     this.state     = 'Off';
     this.nbHitsOff++;
     this.nbHitsOn  = 0;
 };
 
 
-heater.isInverted = function() {
+Heater.isInverted = function() {
     return true;
 };
 
 
-heater.getPower   = function() {
+Heater.getPower   = function() {
     return 1000;
 };
 
 
 function heaterFactory() {
-    return Object.create(heater);
+    return Object.create(Heater);
 }
 
 
-module.exports = heaterFactory;
+module.exports = {
+    Heater,
+    heaterFactory
+};
 

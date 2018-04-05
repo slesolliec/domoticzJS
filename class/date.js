@@ -6,7 +6,7 @@
  */
 
 
-function myDate(a, b, c, d, e, f, g) {
+function MyDate(a, b, c, d, e, f, g) {
     var x;
     switch (arguments.length) {
         case 0:
@@ -33,18 +33,18 @@ function myDate(a, b, c, d, e, f, g) {
         default:
             x = new Date(a, b, c, d, e, f, g);
     }
-    x.__proto__ = myDate.prototype;
+    x.__proto__ = MyDate.prototype;
     return x;
 }
 
-myDate.prototype.__proto__ = Date.prototype;
+MyDate.prototype.__proto__ = Date.prototype;
 
 
 /**
  * Returns the date as 20180402
  * @returns {string} Date as YYYYMMDD
  */
-myDate.prototype.stringDate8 = function() {
+MyDate.prototype.stringDate8 = function() {
     let tmp = '';
     tmp += this.getFullYear();
     if (this.getMonth() < 10) {
@@ -65,7 +65,7 @@ myDate.prototype.stringDate8 = function() {
  * Returns the time as 05:02
  * @returns {string} Time as HH:MM
  */
-myDate.prototype.stringTime5 = function() {
+MyDate.prototype.stringTime5 = function() {
     let tmp = '';
     if (this.getHours() < 10) {
         tmp += '0' + this.getHours() + ':';
@@ -85,7 +85,7 @@ myDate.prototype.stringTime5 = function() {
 /**
  * @returns {boolean} True if the year has a February 29th
  */
-myDate.prototype.isLeapYear = function() {
+MyDate.prototype.isLeapYear = function() {
     let year = this.getFullYear();
     if( (year % 4) !== 0) return false;
     return ( (year % 100) !== 0 || (year % 400) === 0);
@@ -97,7 +97,7 @@ myDate.prototype.isLeapYear = function() {
  * Used to set on which line we are going to write the elecricity consumption on the Google Calc sheet
  * @returns {number} Day of the year.
  */
-myDate.prototype.getDayOfYear = function() {
+MyDate.prototype.getDayOfYear = function() {
     let dayCount = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
     let mn = this.getMonth();
     let dn = this.getDate();
@@ -106,5 +106,22 @@ myDate.prototype.getDayOfYear = function() {
     return dayOfYear;
 };
 
+/**
+ * Heures Pleines ou Heures Creuses?
+ * This is a French specific parameter to some electricity subscriptions:
+ *     from 22:30 to 06:30, power is slightly cheaper
+ * @param date
+ * @returns {string}  'HC' between 22:30 and 06:30 and 'HP' otherwise
+ */
+MyDate.prototype.getHCHP = function () {
+    if ( this.getHours() < 6 )   return 'HC';
+    if ( (this.getHours() === 6  )  && (this.getMinutes() < 30) ) return 'HC';
+    if ( (this.getHours() === 22 ) && (this.getMinutes() > 29) ) return 'HC';
+    if ( this.getHours() > 22 ) return 'HC';
 
-module.exports = myDate ;
+    return 'HP';
+};
+
+
+
+module.exports = MyDate ;

@@ -36,12 +36,6 @@ return;
 // domoJS.say("Hello");
 
 
-// loading state of the house
-const lastStateUpdate = new Date(state.lastUpdate);
-const minSinceLastRun = Math.round( (now - lastStateUpdate) / 1000 / 60 );
-// console.log(' Minutes since last run: ' + minSinceLastRun);
-
-
 let tempData      = '';   // this stores the temperatures
 let switchesData  = '';   // this stores the switches states
 
@@ -196,17 +190,6 @@ function switchOff( room ) {
 }
 
 
-// Heures Pleines ou Heures Creuses?
-// This is a French specific parameter to some electricity subscriptions:
-//      from 22:30 to 06:30, power is slightly cheaper
-function getHCHP ( date ) {
-    if ( date.getHours() < 6)   return 'HC';
-    if ( (date.getHours() === 6)  && (date.getMinutes() < 30) ) return 'HC';
-    if ( (date.getHours() === 22) && (date.getMinutes() > 29) ) return 'HC';
-    if ( date.getHours() > 22 ) return 'HC';
-
-    return 'HP';
-}
 
 // get the wanted temperature given the room and the state of the house
 function getWantedTemp( room, state) {
