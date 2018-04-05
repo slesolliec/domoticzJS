@@ -33,7 +33,11 @@ function getUrl() {
     return url;
 }
 
-
+/**
+ *
+ * @param {function} callback : the function that will be applied to each switch data
+ * @param {function} callbackfinal : the function that will be applied once all switches have been processed
+ */
 function getSwitchesInfo( callback, callbackfinal ) {
 
     let switchesData = '';
@@ -56,4 +60,3 @@ module.exports = {
     setAccess,
     getSwitchesInfo
 };
-
