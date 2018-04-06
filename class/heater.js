@@ -7,13 +7,15 @@ var Heater = {};
 // how do I create private properties on the instance level ???
 
 // public properties
-Heater.name      = '';
-Heater.devIdx    = null;
-Heater.state     = 'Off';
-Heater.HC        = 0;
-Heater.HP        = 0;
-Heater.nbHitsOn  = 0;
-Heater.nbHitsOff = 0;
+Heater.name       = '';
+Heater.devIdx     = null;
+Heater.state      = 'Off';
+Heater.HC         = 0;
+Heater.HP         = 0;
+Heater.nbHitsOn   = 0;
+Heater.nbHitsOff  = 0;
+Heater.isInverted = false;
+Heater.power      = 1000;
 
 // private method
 function dumpfield( item, index) {
@@ -52,18 +54,8 @@ Heater.switchOff = function() {
 };
 
 
-Heater.isInverted = function() {
-    return true;
-};
-
-
-Heater.getPower   = function() {
-    return 1000;
-};
-
-
-// old factory function, but I think I just prefer to use Object.create()
-// in the code
+// old factory function, but I think I just prefer to manipulate the __proto__
+// chain manually
 // function heaterFactory() {
 //    return Object.create(Heater);
 // }

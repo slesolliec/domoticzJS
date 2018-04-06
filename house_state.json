@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2018-01-17T11:52:39.168Z",
+  "lastUpdate": "2018-04-06T15:52:39.168Z",
   "rooms": {
     "Kitchen": {
       "name":   "Kitchen",
@@ -14,6 +14,7 @@
           "HP":         0,
           "nbHitsOn":   0,
           "nbHitsOff":  0,
+          "isInverted": false,
           "power":   1000
         },
         "36": {
@@ -24,6 +25,7 @@
           "HP":         0,
           "nbHitsOn":   0,
           "nbHitsOff":  0,
+          "isInverted": false,
           "power":   1000
         }
       }
@@ -42,7 +44,8 @@
           "HP":         0,
           "nbHitsOn":   0,
           "nbHitsOff":  0,
-          "power":   1000
+          "isInverted": true,
+          "power":   1500
         },
         "HeaterLivingChimney": {
           "name":     "HeateringChimney",
@@ -52,7 +55,8 @@
           "HP":         0,
           "nbHitsOn":   0,
           "nbHitsOff":  0,
-          "power":   1000
+          "isInverted": true,
+          "power":   1500
         },
         "HeaterLivingCorridor": {
           "name":     "HeingCorridor",
@@ -62,6 +66,7 @@
           "HP":         0,
           "nbHitsOn":   0,
           "nbHitsOff":  0,
+          "isInverted": false,
           "power":   1000
         }
       }
@@ -70,4 +75,3 @@
 
   }
 }
-

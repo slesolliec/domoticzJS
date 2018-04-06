@@ -6,6 +6,7 @@
 const fs      = require("fs");
 const MyDate  = require('./class/date');
 const domoAPI = require('./class/domoticzAPI');
+const Heater  = require('./class/heater');
 
 // setting current date
 const now = new MyDate();
@@ -28,14 +29,17 @@ function loadConfigs( path ) {
 
 
 function loadState( path ) {
+    // load state from file
     state = JSON.parse( fs.readFileSync( path ) );
+
+    // make it easier to find which file we read the state from
     state.file = path;
 
-    // make all heaters base objects a heater object
+    // make all heaters instances of Heater prototypal object
+    // (I love prototypal inheritance !!!)
     forEachHeater( function(heater) {
-        heater.__proto__ = heater.prototype;
-
-    } );
+        heater.__proto__ = Heater;
+    });
 }
 
 
@@ -59,7 +63,7 @@ function loadWantedTemps( path ) {
 
 
 function processOneSwitchData ( oneSwitch ) {
-
+    // quite ugly: we loop on all heaters to find the right one
     forEachHeater( function( heater ) {
 
         if ( heater.devIdx == oneSwitch.idx) {
@@ -103,13 +107,13 @@ function countConsumption() {
     const HCorHP = lastStateUpdate.getHCHP();
 
     // we add the number of minutes each heater has been on (in state)
-    for (let roomname in state.rooms) {
-        let room = state.rooms[roomname];
+    for (let room_name in state.rooms) {
+        let room = state.rooms[room_name];
 
-        for (let heateridx in room.heaters) {
-            let heater = room.heaters[heateridx];
+        for (let heater_idx in room.heaters) {
+            let heater = room.heaters[heater_idx];
 
-            if ( heater.isInverted() ) {
+            if ( heater.isInverted ) {
                 if (heater.state === 'Off') {
                     heater[HCorHP] += minSinceLastRun;
                 }
@@ -123,7 +127,8 @@ function countConsumption() {
         }
     }
 
-    console.log( state.rooms.Kitchen );
+    state.lastUpdate = now.toISOString();
+//    fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
     return;
 }
 

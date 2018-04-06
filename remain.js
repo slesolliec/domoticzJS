@@ -5,7 +5,7 @@
 // it is supposed to run as a cron job in order to eat as few ram as possible.
 
 
-const https = require("http");
+// const https = require("http");
 // const fs    = require("fs");
 
 // load main module
@@ -298,7 +298,7 @@ function uploadToGoogleSheet() {
                     // save state
                     fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
                 });
-                
+
 
             })
         });
@@ -306,4 +306,3 @@ function uploadToGoogleSheet() {
     });
 
 }
-
