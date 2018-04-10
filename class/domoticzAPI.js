@@ -56,7 +56,27 @@ function getSwitchesInfo( callback, callbackfinal ) {
 }
 
 
+function getTemperatures( callback ) {
+
+    let tempData = '';
+
+    https.get( getUrl() + '&type=devices&used=true&filter=temp', function(res) {
+        res.setEncoding("utf8");
+        res.on("data", function(data) { tempData += data; });
+        res.on("end",  function() {
+            // console.log(body);
+            tempData = JSON.parse(tempData);
+            tempData.result.forEach( callback )
+        });
+  });
+
+}
+
+
+
+
 module.exports = {
     setAccess,
-    getSwitchesInfo
+    getSwitchesInfo,
+    getTemperatures
 };

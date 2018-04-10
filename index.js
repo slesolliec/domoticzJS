@@ -54,14 +54,40 @@ function forEachHeater( func ) {
 }
 
 
+/**
+ * Reads the temperatures in Google Calc "proxy" file, and write them in state.rooms.xxx.wantedTemps
+ * @param path of the json file that has the temperatures per hours (from Google Calc)
+ */
 function loadWantedTemps( path ) {
     if ( ! fs.existsSync( path ))
         return;
-    wantedTemps = JSON.parse( fs.readFileSync( path ));
+
+    var wantedTemps = JSON.parse( fs.readFileSync( path ));
+    var now5 = now.stringTime5();
+
+    // from the sheet of wanted temps, we get which temperature we now want
+    for (var room in wantedTemps) {
+
+        var wantedTemp = 10;
+
+        for (var keyHours in wantedTemps[room]) {
+            if (now5 > keyHours) {
+                wantedTemp = wantedTemps[room][keyHours];
+            }
+        }
+
+        state.rooms[room].wantedTemp = Number(wantedTemp);
+
+        // console.log(state.rooms[room]);
+    }
     // say(" Wanted Temperatures:"); console.log(wantedTemps);
 }
 
 
+/**
+ *
+ * @param oneSwitch
+ */
 function processOneSwitchData ( oneSwitch ) {
     // quite ugly: we loop on all heaters to find the right one
     forEachHeater( function( heater ) {
@@ -100,7 +126,7 @@ function processOneSwitchData ( oneSwitch ) {
 
 function countConsumption() {
 
-    console.log(state);
+    // console.log(state);
 
     const lastStateUpdate = new MyDate(state.lastUpdate);
     const minSinceLastRun = Math.round( (now - lastStateUpdate) / 1000 / 60 );
@@ -123,14 +149,28 @@ function countConsumption() {
                 }
             }
 
-            console.log( heater.name + " is " + heater.state);
+            // console.log( heater.name + " is " + heater.state);
         }
     }
 
+    // update last update in the state and save it to disk
     state.lastUpdate = now.toISOString();
 //    fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
+    // uploadToGoogleSheet();
+
+    // let's follow by requesting the temperatures
+    getTemperatures();
+
     return;
 }
+
+
+function getTemperatures() {
+    // get temperatures from Domoticz
+    domoAPI.getTemperatures( processOneTemperatureData );
+
+}
+
 
 
 // 1. get switch states from Domoticz
@@ -143,21 +183,68 @@ function updateSwitchesStatus() {
 
     domoAPI.getSwitchesInfo( processOneSwitchData, countConsumption );
 
-//    console.log( state.rooms.Kitchen );
+}
 
-//    setTimeout( function() { console.log( state.rooms.Kitchen );}, 5000);
+
+
+
+
+// that is the function that decides who to switch on or off
+function processOneTemperatureData (thermometer) {
+
+    console.log(thermometer);
 
     return;
 
-    // update last update in the state and save it to disk
-    state.lastUpdate = now.toISOString();
-    fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
-    uploadToGoogleSheet();
-    // console.log( state );
 
-    // let's follow by requesting the temperatures
-    getTemperatures();
+    // we get the room from the name of the device: tempBed -> Bed
+    let room       = thermometer.Name.substring(4);
+    // we get the wanted temperature for that room knowing the status of the home (day, night, out, ...)
+    let wantedTemp = getWantedTemp(room, houseStatus);
+
+    if (thermometer.Temp < wantedTemp) {
+        // it's too cold: we turn heater on if not already on
+        say( constantLength( room ) + " is cold: " + thermometer.Temp + '/' + wantedTemp );
+        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
+            if ( heaters[room] === 'Off')   switchOn( room );
+        } else {
+            if ( heaters[room] === 'On')    switchOn( room );
+        }
+
+    } else if (thermometer.Temp > wantedTemp) {
+        // it's too how: we turn heater off if not already off
+        say( constantLength( room ) + " is hot : " + thermometer.Temp + '/' + wantedTemp);
+        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
+            if ( heaters[room] === 'On')    switchOff( room );
+        } else {
+            if ( heaters[room] === 'Off')   switchOff( room );
+        }
+    } else {
+        say( constantLength( room ) + " is ok  : " + thermometer.Temp + '/' + wantedTemp);
+    }
+
+    // sometimes, the chacom miss an order sent by the RFXCom
+    // so we resend command every quarter if necessary
+    if (now.getMinutes() % 15 !== 0) return;
+    // when we are gone, we resent orders only once every 4 hours
+    if ((getState( now ) === 'gone') && (( now.getHours() % 4 !== 0) || ( now.getMinutes() !== 0 )) ) return;
+
+    if (thermometer.Temp < wantedTemp - 0.3) {
+        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
+            if ( heaters[room] === 'On')   switchOn( room );
+        } else {
+            if ( heaters[room] === 'Off')  switchOn( room );
+        }
+    } else if (thermometer.Temp > wantedTemp + 0.3) {
+        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
+            if ( heaters[room] === 'Off')  switchOff( room );
+        } else {
+            if ( heaters[room] === 'On')   switchOff( room );
+        }
+    }
+
 }
+
 
 
 

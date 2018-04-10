@@ -54,8 +54,6 @@ const devices = {
     'TC1B3': 25
 };
 
-// this does it all
-getSwitchesStatus();
 
 // here the main flow is finished.
 // all that follows is just function definitions
@@ -64,70 +62,6 @@ getSwitchesStatus();
 
 
 
-function getTemperatures() {
-// get temperatures from Domoticz
-    https.get(url + '&type=devices&used=true&filter=temp', function(res) {
-        res.setEncoding("utf8");
-        res.on("data", function(data) { tempData += data; });
-        res.on("end",  function() {
-            // console.log(body);
-            tempData = JSON.parse(tempData);
-            // for each temperature received, we call manageHeater
-            tempData.result.forEach( manageHeater )
-        });
-    });
-}
-
-
-// that is the function that decides who to switch on or off
-function manageHeater (thermometer) {
-    // we get the room from the name of the device: tempBed -> Bed
-    let room       = thermometer.Name.substring(4);
-    // we get the wanted temperature for that room knowing the status of the home (day, night, out, ...)
-    let wantedTemp = getWantedTemp(room, houseStatus);
-
-    if (thermometer.Temp < wantedTemp) {
-        // it's too cold: we turn heater on if not already on
-        say( constantLength( room ) + " is cold: " + thermometer.Temp + '/' + wantedTemp );
-        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
-            if ( heaters[room] === 'Off')   switchOn( room );
-        } else {
-            if ( heaters[room] === 'On')    switchOn( room );
-        }
-
-    } else if (thermometer.Temp > wantedTemp) {
-        // it's too how: we turn heater off if not already off
-        say( constantLength( room ) + " is hot : " + thermometer.Temp + '/' + wantedTemp);
-        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
-            if ( heaters[room] === 'On')    switchOff( room );
-        } else {
-            if ( heaters[room] === 'Off')   switchOff( room );
-        }
-    } else {
-        say( constantLength( room ) + " is ok  : " + thermometer.Temp + '/' + wantedTemp);
-    }
-
-    // sometimes, the chacom miss an order sent by the RFXCom
-    // so we resend command every quarter if necessary
-    if (now.getMinutes() % 15 !== 0) return;
-    // when we are gone, we resent orders only once every 4 hours
-    if ((getState( now ) === 'gone') && (( now.getHours() % 4 !== 0) || ( now.getMinutes() !== 0 )) ) return;
-
-    if (thermometer.Temp < wantedTemp - 0.3) {
-        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
-            if ( heaters[room] === 'On')   switchOn( room );
-        } else {
-            if ( heaters[room] === 'Off')  switchOn( room );
-        }
-    } else if (thermometer.Temp > wantedTemp + 0.3) {
-        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
-            if ( heaters[room] === 'Off')  switchOff( room );
-        } else {
-            if ( heaters[room] === 'On')   switchOff( room );
-        }
-    }
-
-}
 
 // stupid formatting function to get nicely aligned logs
 function constantLength ( str ) {
