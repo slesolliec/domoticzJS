@@ -6,6 +6,7 @@
 const fs      = require("fs");
 const MyDate  = require('./class/date');
 const domoAPI = require('./class/domoticzAPI');
+const Room    = require('./class/room');
 const Heater  = require('./class/heater');
 
 // setting current date
@@ -34,6 +35,10 @@ function loadState( path ) {
 
     // make it easier to find which file we read the state from
     state.file = path;
+
+    // make all rooms instances of Room prototypal object
+    for (let room in state.rooms)
+        state.rooms[room].__proto__ = Room;
 
     // make all heaters instances of Heater prototypal object
     // (I love prototypal inheritance !!!)
@@ -194,34 +199,17 @@ function processOneTemperatureData (thermometer) {
 
     console.log(thermometer);
 
-    return;
-
-
     // we get the room from the name of the device: tempBed -> Bed
     let room       = thermometer.Name.substring(4);
-    // we get the wanted temperature for that room knowing the status of the home (day, night, out, ...)
-    let wantedTemp = getWantedTemp(room, houseStatus);
 
-    if (thermometer.Temp < wantedTemp) {
-        // it's too cold: we turn heater on if not already on
-        say( constantLength( room ) + " is cold: " + thermometer.Temp + '/' + wantedTemp );
-        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
-            if ( heaters[room] === 'Off')   switchOn( room );
-        } else {
-            if ( heaters[room] === 'On')    switchOn( room );
-        }
+    // update state
+    state.rooms[room].setTemperature(thermometer.Temp);
 
-    } else if (thermometer.Temp > wantedTemp) {
-        // it's too how: we turn heater off if not already off
-        say( constantLength( room ) + " is hot : " + thermometer.Temp + '/' + wantedTemp);
-        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
-            if ( heaters[room] === 'On')    switchOff( room );
-        } else {
-            if ( heaters[room] === 'Off')   switchOff( room );
-        }
-    } else {
-        say( constantLength( room ) + " is ok  : " + thermometer.Temp + '/' + wantedTemp);
-    }
+    // todo: a check on the last update
+    // if (thermometer.LastUpdate( la date en CET ) > 1 heure et 5 minutes (pour être DST23 proof) = alerte !!
+
+
+    return;
 
     // sometimes, the chacom miss an order sent by the RFXCom
     // so we resend command every quarter if necessary
