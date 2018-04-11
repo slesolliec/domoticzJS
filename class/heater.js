@@ -1,4 +1,11 @@
 
+const domoAPI = require('./domoticzAPI');
+
+function say( msg ) {
+    console.log ( '     ' + msg);
+}
+
+
 var Heater = {};
 
 // private properties
@@ -24,32 +31,64 @@ function dumpfield( item, index) {
 
 // dumping properties of the object (for debug)
 Heater.dump      = function() {
-    for (var index in this) {
+    for (let index in this) {
         dumpfield( this[index], index);
     }
 };
 
 // switching on a heater
 Heater.switchOn  = function() {
-    this.state     = 'On';
-    this.nbHitsOff = 0;
-    if (this.nbHitsOn < 3) {
-      this.nbHitsOn++;
-      // send request to Domoticz API
-      // todo: implement request
 
+    // this sends the request
+    function doSwitch() {
+        if (this.isInverted) {
+            domoAPI.switchDevice( this.devIdx, 'Off')
+        } else {
+            domoAPI.switchDevice( this.devIdx, 'On')
+        }
     }
+
+    // first switching
+    if (this.state === 'Off') {
+        say( "Switching ON  " + this.name );
+        this.nbHitsOn  = 1;
+        this.nbHitsOff = 0;
+        this.state     = 'On';
+        doSwitch();
+
+    // switch ressent
+    } else if ((this.nbHitsOn < 3) && ( new Date().getMinute() % 5 === 0))  {
+        say( "Switching ON  " + this.name + " (resent)" );
+        this.nbHitsOn++;
+        doSwitch();
+    }
+
 };
 
 // switching off a heater
 Heater.switchOff = function() {
-    this.state     = 'Off';
-    this.nbHitsOn  = 0;
-    if (this.nbHitsOff < 3) {
-      this.nbHitsOff++;
-      // send request to Domoticz API
-      // todo: implement request
+    // this sends the request
+    function doSwitch() {
+        if (this.isInverted) {
+            domoAPI.switchDevice( this.devIdx, 'On')
+        } else {
+            domoAPI.switchDevice( this.devIdx, 'Off')
+        }
+    }
 
+    // first switching
+    if (this.state === 'On') {
+        say( "Switching OFF " + this.name );
+        this.nbHitsOn  = 0;
+        this.nbHitsOff = 1;
+        this.state     = 'Off';
+        doSwitch();
+
+        // switch ressent
+    } else if ((this.nbHitsOff < 3) && ( new Date().getMinute() % 5 === 0))  {
+        say( "Switching OFF " + this.name + " (resent)" );
+        this.nbHitsOff++;
+        doSwitch();
     }
 };
 

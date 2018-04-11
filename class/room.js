@@ -1,16 +1,22 @@
 
+const MyDate = require('./date');
+
 Room = {};
 
-
+// this should not be here ....
 function say( msg ) {
-    console.log( now.stringTime5() + ' ' + msg);
+    console.log( MyDate().stringTime5() + ' ' + msg);
 }
 
+// stupid formatting function to get nicely aligned logs
+function constantLength ( str ) {
+    return  (str + '      ').slice(0,8);
+}
 
 
 Room.setTemperature = function( temperature ) {
 
-    this.Temp = temperature;
+    this.temp = temperature;
 
     this.checkHeaters();
 
@@ -22,22 +28,22 @@ Room.setTemperature = function( temperature ) {
  */
 Room.checkHeaters = function() {
     // we now see if heaters need to be switched on or off
-    if (this.Temp < this.wantedTemp) {
+    if (this.temp < this.wantedTemp) {
         // it's too cold: we turn heater on if not already on
-        say( constantLength( this.Name ) + " is cold: " + this.Temp + '/' + this.wantedTemp );
+        say( constantLength( this.name ) + " is cold: " + this.temp + '/' + this.wantedTemp );
 
         // switch heaters on
         this.switchHeatersOn();
 
-    } else if (this.Temp > this.wantedTemp) {
+    } else if (this.temp > this.wantedTemp) {
         // it's too how: we turn heater off if not already off
-        say( constantLength( this.Name ) + " is hot : " + this.Temp + '/' + this.wantedTemp);
+        say( constantLength( this.name ) + " is hot : " + this.temp + '/' + this.wantedTemp);
 
         // switch heaters off
         this.switchHeatersOff();
 
     } else {
-        say( constantLength( room ) + " is ok  : " + this.Temp + '/' + this.wantedTemp);
+        say( constantLength( this.name ) + " is ok  : " + this.temp + '/' + this.wantedTemp);
     }
 };
 

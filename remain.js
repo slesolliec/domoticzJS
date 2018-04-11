@@ -65,11 +65,7 @@ const devices = {
 
 // stupid formatting function to get nicely aligned logs
 function constantLength ( str ) {
-    let size = str.length;
-    for ( let i = size ; i < 7 ; i++) {
-        str += ' ';
-    }
-    return str;
+    return  (str + '      ').slice(0,8);
 }
 
 

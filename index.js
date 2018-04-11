@@ -197,7 +197,7 @@ function updateSwitchesStatus() {
 // that is the function that decides who to switch on or off
 function processOneTemperatureData (thermometer) {
 
-    console.log(thermometer);
+    // console.log(thermometer.Name);
 
     // we get the room from the name of the device: tempBed -> Bed
     let room       = thermometer.Name.substring(4);
@@ -205,7 +205,7 @@ function processOneTemperatureData (thermometer) {
     // update state
     state.rooms[room].setTemperature(thermometer.Temp);
 
-    // todo: a check on the last update
+    // todo: a check on the last update to catch empty batteries
     // if (thermometer.LastUpdate( la date en CET ) > 1 heure et 5 minutes (pour être DST23 proof) = alerte !!
 
 
