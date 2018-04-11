@@ -39,13 +39,6 @@ return;
 let tempData      = '';   // this stores the temperatures
 let switchesData  = '';   // this stores the switches states
 
-// data for all the heaters
-const heaters = {
-    'Bed'    : '-',
-    'Living' : '-',
-    'Bath'   : '-',
-    'Kitchen': '-'
-};
 
 // gives the idx of certain devices so we can send the commands to the right device
 const devices = {
@@ -66,57 +59,6 @@ const devices = {
 // stupid formatting function to get nicely aligned logs
 function constantLength ( str ) {
     return  (str + '      ').slice(0,8);
-}
-
-
-// we send the order to turn heaters on
-// as most of the heaters are pluggen on the chacom module via the pilot thread,
-// setting the chacom on ON turns off the heater.
-function switchOn( room ) {
-    say( "Switch " + room + " ON");
-
-    switch ( room ) {
-        case 'Bed':
-            https.get(url + '&type=command&param=switchlight&idx=3&switchcmd=Off');
-            break;
-        case 'Kitchen':
-            https.get(url + '&type=command&param=switchlight&idx=30&switchcmd=On');
-            https.get(url + '&type=command&param=switchlight&idx=36&switchcmd=On');
-            break;
-        case 'Living':
-            https.get(url + '&type=command&param=switchlight&idx=12&switchcmd=Off');
-            https.get(url + '&type=command&param=switchlight&idx=13&switchcmd=Off');
-            https.get(url + '&type=command&param=switchlight&idx=37&switchcmd=Off');
-            break;
-        case 'Bath':
-            https.get(url + '&type=command&param=switchlight&idx=39&switchcmd=On');
-            break;
-    }
-
-}
-
-// same as above, but with off
-function switchOff( room ) {
-    say( "Switch " + room + " OFF");
-
-    switch (room) {
-        case 'Bed':
-            https.get(url + '&type=command&param=switchlight&idx=3&switchcmd=On');
-            break;
-        case 'Kitchen':
-            https.get(url + '&type=command&param=switchlight&idx=30&switchcmd=Off');
-            https.get(url + '&type=command&param=switchlight&idx=36&switchcmd=Off');
-            break;
-        case 'Living':
-            https.get(url + '&type=command&param=switchlight&idx=12&switchcmd=On');
-            https.get(url + '&type=command&param=switchlight&idx=13&switchcmd=On');
-            https.get(url + '&type=command&param=switchlight&idx=37&switchcmd=On');
-            break;
-        case 'Bath':
-            https.get(url + '&type=command&param=switchlight&idx=39&switchcmd=Off');
-            break;
-    }
-
 }
 
 

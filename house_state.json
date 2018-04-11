@@ -1,86 +1,68 @@
 {
-  "lastUpdate": "2018-04-06T15:52:39.168Z",
-  "rooms": {
-    "Kitchen": {
-      "name":   "Kitchen",
-      "idx":    2,
-      "wantedTemp": 18,
-      "heaters": {
-        "30": {
-          "name":     "HeatKitchen",
-          "devIdx":    30,
-          "state":     "Off",
-          "HC":         0,
-          "HP":         0,
-          "nbHitsOn":   0,
-          "nbHitsOff":  0,
-          "isInverted": false,
-          "power":   1000
+    "lastUpdate": "2018-04-11T21:52:39.168Z",
+    "rooms": {
+        "Kitchen": {
+            "name": "Kitchen",
+            "idx": 2,
+            "wantedTemp": 18,
+            "heaters": {
+                "30": {
+                    "devIdx": 30
+                },
+                "36": {
+                    "devIdx": 36
+                }
+            }
         },
-        "36": {
-          "name":     "HeatchenSmall",
-          "devIdx":    36,
-          "state":     "Off",
-          "HC":         0,
-          "HP":         0,
-          "nbHitsOn":   0,
-          "nbHitsOff":  0,
-          "isInverted": false,
-          "power":   1000
+        "Living": {
+            "name": "Living",
+            "idx": 3,
+            "wantedTemp": 19,
+            "heaters": {
+                "13": {
+                    "name": "HeaterLiving",
+                    "devIdx": 13,
+                    "isInverted": true,
+                    "power": 1500
+                },
+                "12": {
+                    "name": "HeaterLivingChimney",
+                    "devIdx": 12,
+                    "isInverted": true,
+                    "power": 1500
+                },
+                "37": {
+                    "name": "HeaterLivingCorridor",
+                    "devIdx": 37
+                }
+            }
+        },
+        "Bed": {
+            "name": "Chambre",
+            "heaters": {
+                "3": {
+                    "name": "HeaterBed",
+                    "devIdx": 3
+                }
+            }
+        },
+        "Bath": {
+            "name": "SdBain",
+            "heaters": {
+                "39": {
+                    "name": "HeaterBath",
+                    "devIdx": 39
+                }
+            }
+        },
+        "Pallier": {
+            "name": "Pallier",
+            "heaters": {
+                "200": {
+                    "name": "HeaterBath",
+                    "devIdx": 39
+                }
+            }
         }
-      }
-    },
-
-    "Living": {
-      "name":   "Living",
-      "idx":    3,
-      "wantedTemp": 19,
-      "heaters": {
-        "HeaterLiving": {
-          "name":     "Heaterg",
-          "devIdx":    13,
-          "state":     "Off",
-          "HC":         0,
-          "HP":         0,
-          "nbHitsOn":   0,
-          "nbHitsOff":  0,
-          "isInverted": true,
-          "power":   1500
-        },
-        "HeaterLivingChimney": {
-          "name":     "HeateringChimney",
-          "devIdx":    12,
-          "state":     "Off",
-          "HC":         0,
-          "HP":         0,
-          "nbHitsOn":   0,
-          "nbHitsOff":  0,
-          "isInverted": true,
-          "power":   1500
-        },
-        "HeaterLivingCorridor": {
-          "name":     "HeingCorridor",
-          "devIdx":    37,
-          "state":     "Off",
-          "HC":         0,
-          "HP":         0,
-          "nbHitsOn":   0,
-          "nbHitsOff":  0,
-          "isInverted": false,
-          "power":   1000
-        }
-      }
-    },
-
-      "Bed": {
-
-      },
-
-      "Bath": {
-
-      }
-
-
-
-  }
+    }
 }

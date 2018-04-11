@@ -1,3 +1,5 @@
+"use strict";
+
 /**
     Main module.
 
@@ -187,6 +189,8 @@ function getTemperatures() {
 function updateSwitchesStatus() {
 
     domoAPI.getSwitchesInfo( processOneSwitchData, countConsumption );
+
+    console.log(state.rooms);
 
 }
 

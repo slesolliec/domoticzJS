@@ -1,3 +1,5 @@
+"use strict";
+
 /**
 
  This manages all requests to Domoticz.
@@ -11,6 +13,13 @@ let url      = '';
 let domoticzUrl;
 let username;
 let password;
+
+
+// my stupide console.log wrapper
+function say( msg ) {
+    console.log("     " + msg);
+}
+
 
 
 function setAccess( domourl, user, pwd ) {
@@ -75,30 +84,9 @@ function getTemperatures( callback ) {
 
 function switchDevice( deviceIdx, command ) {
 
-    say( "Switch " + room + " OFF");
+    say( "Switch device " + deviceIdx + " " + command);
 
     https.get( getUrl() + '&type=command&param=switchlight&idx=' + deviceIdx + '&switchcmd=' + command);
-
-/*
-    switch (room) {
-        case 'Bed':
-            https.get(url + '&type=command&param=switchlight&idx=3&switchcmd=On');
-            break;
-        case 'Kitchen':
-            https.get(url + '&type=command&param=switchlight&idx=30&switchcmd=Off');
-            https.get(url + '&type=command&param=switchlight&idx=36&switchcmd=Off');
-            break;
-        case 'Living':
-            https.get(url + '&type=command&param=switchlight&idx=12&switchcmd=On');
-            https.get(url + '&type=command&param=switchlight&idx=13&switchcmd=On');
-            https.get(url + '&type=command&param=switchlight&idx=37&switchcmd=On');
-            break;
-        case 'Bath':
-            https.get(url + '&type=command&param=switchlight&idx=39&switchcmd=Off');
-            break;
-    }
-*/
-
 }
 
 

@@ -1,3 +1,5 @@
+"use strict";
+
 /*
     This module is to extend the Date() object without touching the original Date() in case
     it is also extended in another way by a third party application.

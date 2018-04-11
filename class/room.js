@@ -1,7 +1,8 @@
+"use strict";
 
 const MyDate = require('./date');
 
-Room = {};
+const Room = {};
 
 // this should not be here ....
 function say( msg ) {
@@ -53,7 +54,7 @@ Room.checkHeaters = function() {
  * Switch all heaters ON in this room
  */
 Room.switchHeatersOn = function() {
-    for (heater in this.heaters)
+    for (let heater in this.heaters)
         this.heaters[heater].switchOn();
 };
 
@@ -61,7 +62,7 @@ Room.switchHeatersOn = function() {
  * Switch all heaters OFF in this room
  */
 Room.switchHeatersOff = function() {
-    for (heater in this.heaters)
+    for (let heater in this.heaters)
         this.heaters[heater].switchOff();
 };
 
