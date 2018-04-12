@@ -8,7 +8,7 @@ function say( msg ) {
 }
 
 
-var Heater = {};
+const Heater = {};
 
 // private properties
 // I guess the properties here will just be private but will be of the unique
@@ -41,10 +41,9 @@ Heater.dump      = function() {
 // switching on a heater
 Heater.switchOn  = function() {
 
-    console.log(this);
-    say("  switching device " + this.name);
-
     // this sends the request
+    // warning: inner functions (closures) normally loose access to this
+    // call it with doSwitch.call(this); to get this back
     function doSwitch() {
         if (this.isInverted) {
             domoAPI.switchDevice( this.devIdx, 'Off')
@@ -59,13 +58,13 @@ Heater.switchOn  = function() {
         this.nbHitsOn  = 1;
         this.nbHitsOff = 0;
         this.state     = 'On';
-        doSwitch();
+        doSwitch.call(this);
 
-    // switch ressent
-    } else if ((this.nbHitsOn < 3) && ( new Date().getMinute() % 5 === 0))  {
+    // resend switch order
+    } else if ((this.nbHitsOn < 3) && ( new Date().getMinutes() % 5 === 0))  {
         say( "Switching ON  " + this.name + " (resent)" );
         this.nbHitsOn++;
-        doSwitch();
+        doSwitch.call(this);
     }
 
 };
@@ -73,12 +72,9 @@ Heater.switchOn  = function() {
 // switching off a heater
 Heater.switchOff = function() {
     // this sends the request
+    // warning: inner functions (closures) normally loose access to this
+    // call it with doSwitch.call(this); to get this back
     function doSwitch() {
-
-        console.log(this);
-
-        say("  switching device " + this.name);
-
         if (this.isInverted) {
             domoAPI.switchDevice( this.devIdx, 'On')
         } else {
@@ -92,13 +88,13 @@ Heater.switchOff = function() {
         this.nbHitsOn  = 0;
         this.nbHitsOff = 1;
         this.state     = 'Off';
-        doSwitch();
+        doSwitch.call(this);
 
-        // switch ressent
+    // resend switch order
     } else if ((this.nbHitsOff < 3) && ( new Date().getMinutes() % 5 === 0))  {
         say( "Switching OFF " + this.name + " (resent)" );
         this.nbHitsOff++;
-        doSwitch();
+        doSwitch.call(this);
     }
 };
 
