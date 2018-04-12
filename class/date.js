@@ -7,7 +7,19 @@
     The main hack is to fiddle with the prototype chain so the object is a myDate >> Date >> Object.
  */
 
-
+/**
+ * MyDate factory function.
+ *
+ * @param a
+ * @param b
+ * @param c
+ * @param d
+ * @param e
+ * @param f
+ * @param g
+ * @returns {Date}
+ * @constructor
+ */
 function MyDate(a, b, c, d, e, f, g) {
     var x;
     switch (arguments.length) {
@@ -35,11 +47,17 @@ function MyDate(a, b, c, d, e, f, g) {
         default:
             x = new Date(a, b, c, d, e, f, g);
     }
+    // making x an "instance of" MyDate.prototype
     x.__proto__ = MyDate.prototype;
+    // returning created object = factory pattern
     return x;
 }
 
+// making MyDate objects inherit from Date objects
 MyDate.prototype.__proto__ = Date.prototype;
+
+// so basically, MyDate is simply a Date object, which I can now safely extend
+// without wrecking havocs in Date type.
 
 
 /**
@@ -96,7 +114,7 @@ MyDate.prototype.isLeapYear = function() {
 
 /**
  * Returns the days of the year.
- * Used to set on which line we are going to write the elecricity consumption on the Google Calc sheet
+ * Used to set on which line we are going to write the electricity consumption on the Google Calc sheet
  * @returns {number} Day of the year.
  */
 MyDate.prototype.getDayOfYear = function() {
@@ -108,22 +126,21 @@ MyDate.prototype.getDayOfYear = function() {
     return dayOfYear;
 };
 
+
 /**
  * Heures Pleines ou Heures Creuses?
  * This is a French specific parameter to some electricity subscriptions:
  *     from 22:30 to 06:30, power is slightly cheaper
- * @param date
  * @returns {string}  'HC' between 22:30 and 06:30 and 'HP' otherwise
  */
 MyDate.prototype.getHCHP = function () {
-    if ( this.getHours() < 6 )   return 'HC';
+    if ( this.getHours() < 6 )  return 'HC';
     if ( (this.getHours() === 6  )  && (this.getMinutes() < 30) ) return 'HC';
-    if ( (this.getHours() === 22 ) && (this.getMinutes() > 29) ) return 'HC';
+    if ( (this.getHours() === 22 )  && (this.getMinutes() > 29) ) return 'HC';
     if ( this.getHours() > 22 ) return 'HC';
 
     return 'HP';
 };
-
 
 
 module.exports = MyDate ;

@@ -18,7 +18,6 @@ const domoJS = {};
 const now = new MyDate();
 let configs;
 let state;
-let wantedTemps;
 
 
 /**
