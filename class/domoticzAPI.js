@@ -83,9 +83,7 @@ function getTemperatures( callback ) {
 
 
 function switchDevice( deviceIdx, command ) {
-
-    say( "Switch device " + deviceIdx + " " + command);
-
+    // say( "Switch device " + deviceIdx + " " + command);
     https.get( getUrl() + '&type=command&param=switchlight&idx=' + deviceIdx + '&switchcmd=' + command);
 }
 

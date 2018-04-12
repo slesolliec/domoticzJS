@@ -5,33 +5,48 @@
 
  */
 
+// dependencies
 const fs      = require("fs");
 const MyDate  = require('./class/date');
 const domoAPI = require('./class/domoticzAPI');
 const Room    = require('./class/room');
 const Heater  = require('./class/heater');
 
-// setting current date
+
+const domoJS = {};
+
 const now = new MyDate();
 let configs;
 let state;
 let wantedTemps;
 
 
+/**
+ * Some stupid console.log wrapper with prepended time
+ * @param msg
+ */
 function say( msg ) {
     console.log( now.stringTime5() + ' ' + msg);
 }
 
 
-function loadConfigs( path ) {
+/**
+ * We load the configs from configuration file (URL of Domoticz, user/pwd, ...)
+ * @param path
+ */
+domoJS.loadConfigs = function( path ) {
     configs = JSON.parse( fs.readFileSync( path ) );
 
     // I don't understand why domoAPI does not have access to configs
     domoAPI.setAccess( configs.domoticz, configs.username, configs.password );
-}
+};
 
 
-function loadState( path ) {
+/**
+ * Get the state of the house from json state file : last update, rooms, temperatures, heaters, ...
+ * @param path
+ */
+domoJS.loadState = function( path ) {
     // load state from file
     state = JSON.parse( fs.readFileSync( path ) );
 
@@ -39,19 +54,20 @@ function loadState( path ) {
     state.file = path;
 
     // make all rooms instances of Room prototypal object
+    // (I love prototypal inheritance !!!)
     for (let room in state.rooms)
         state.rooms[room].__proto__ = Room;
 
     // make all heaters instances of Heater prototypal object
-    // (I love prototypal inheritance !!!)
+    // (Have I ever told you I loved prototypal inheritance?)
     forEachHeater( function(heater) {
         heater.__proto__ = Heater;
     });
-}
+};
 
 
 /**
- * Applies the function func to each heater of each room
+ * Utility: applies the function func to each heater of each room
  * @param {function} func function to be applied to each heater
  */
 function forEachHeater( func ) {
@@ -62,37 +78,47 @@ function forEachHeater( func ) {
 
 
 /**
- * Reads the temperatures in Google Calc "proxy" file, and write them in state.rooms.xxx.wantedTemps
+ * Reads the temperatures in Google Calc "proxy" file, and writes them in state.rooms.xxx.wantedTemps
  * @param path of the json file that has the temperatures per hours (from Google Calc)
  */
-function loadWantedTemps( path ) {
+domoJS.loadWantedTemps = function( path ) {
     if ( ! fs.existsSync( path ))
         return;
 
-    var wantedTemps = JSON.parse( fs.readFileSync( path ));
-    var now5 = now.stringTime5();
+    let wantedTemps = JSON.parse( fs.readFileSync( path ));
+    let now5 = now.stringTime5();
 
     // from the sheet of wanted temps, we get which temperature we now want
-    for (var room in wantedTemps) {
+    for (let room in wantedTemps) {
 
-        var wantedTemp = 10;
+        let wantedTemp = 10;
 
-        for (var keyHours in wantedTemps[room]) {
-            if (now5 > keyHours) {
+        for (let keyHours in wantedTemps[room])
+            if (now5 > keyHours)
                 wantedTemp = wantedTemps[room][keyHours];
-            }
-        }
 
         state.rooms[room].wantedTemp = Number(wantedTemp);
 
         // console.log(state.rooms[room]);
     }
     // say(" Wanted Temperatures:"); console.log(wantedTemps);
-}
+};
+
+/**
+ * Get the heater switches status
+ *  send Domoticz API call
+ *  get result as list of switch data
+ *  process each switch (heater) in a callback
+ *  then count consumption
+ */
+domoJS.updateSwitchesStatus = function() {
+    domoAPI.getSwitchesInfo( processOneSwitchData, countConsumption );
+    // console.log(state.rooms);
+};
 
 
 /**
- *
+ * We process the data from one switch (to read name and status of each heater switch)
  * @param oneSwitch
  */
 function processOneSwitchData ( oneSwitch ) {
@@ -105,7 +131,7 @@ function processOneSwitchData ( oneSwitch ) {
             heater.name  = oneSwitch.Name;
             heater.state = oneSwitch.Status;
         }
-
+        // console.log(heater);
     });
 
     return;
@@ -125,16 +151,18 @@ function processOneSwitchData ( oneSwitch ) {
         }
     }
 
-    say(" State:");
-    console.log(state);
-
+    // console.log(state);
 }
 
 
+/**
+ * Count each minute each heater has been ON.
+ * Scatter those minutes between High price hours and low price hours.
+ */
+// todo: HC and HP should belong to rooms instead of each heaters
 function countConsumption() {
 
     // console.log(state);
-
     const lastStateUpdate = new MyDate(state.lastUpdate);
     const minSinceLastRun = Math.round( (now - lastStateUpdate) / 1000 / 60 );
     const HCorHP = lastStateUpdate.getHCHP();
@@ -167,38 +195,21 @@ function countConsumption() {
 
     // let's follow by requesting the temperatures
     getTemperatures();
-
-    return;
 }
 
 
+/**
+ * We get the current temperatures from Domoticz.
+ */
 function getTemperatures() {
-    // get temperatures from Domoticz
+    // get temperatures from Domoticz, pass the callback that is going to be applied on each room temperature
     domoAPI.getTemperatures( processOneTemperatureData );
-
 }
 
 
-
-// 1. get switch states from Domoticz
-// 2. from that, put the heater states into heater
-// 3. compute the number of minutes of power on
-// remark: for all heater whose chacon module is plugged to the pilot thread, Off = heater is on
-// only the Bathroom has On = heater is on
-// 4. we send the switch commands to Domoticz
-function updateSwitchesStatus() {
-
-    domoAPI.getSwitchesInfo( processOneSwitchData, countConsumption );
-
-    console.log(state.rooms);
-
-}
-
-
-
-
-
-// that is the function that decides who to switch on or off
+/**
+ * Decide who to switch on or off
+ */
 function processOneTemperatureData (thermometer) {
 
     // console.log(thermometer.Name);
@@ -237,15 +248,9 @@ function processOneTemperatureData (thermometer) {
 
 }
 
+// creating aliases so state and configs are visble from the outside
+domoJS.configs = configs;
+domoJS.state   = state;
 
+module.exports = domoJS;
 
-
-module.exports = {
-    configs,
-    state,
-
-    loadConfigs,
-    loadState,
-    loadWantedTemps,
-    updateSwitchesStatus
-};

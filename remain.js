@@ -20,15 +20,15 @@ domoJS.loadState( __dirname + '/house_state.json');
 // load wanted temperatures
 domoJS.loadWantedTemps( __dirname + '/wanted_temperatures.json');
 
+// we get the state of the switches of the heaters
+// then it fetches current temperatures from Domoticz
+// then it sends ON / OFF commands
 domoJS.updateSwitchesStatus();
 
 return;
 
 // compute consumption ?? and update Calc sheet ??
 
-// fetch temperatures ??
-
-// take actions ??
 
 // save down state ??
 
