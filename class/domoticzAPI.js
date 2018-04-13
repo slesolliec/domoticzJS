@@ -9,19 +9,27 @@
  */
 
 const https  = require("http");
+
 let url      = '';
 let domoticzUrl;
 let username;
 let password;
 
 
-// my stupide console.log wrapper
+/**
+ * my stupide console.log wrapper
+ */
 function say( msg ) {
     console.log("     " + msg);
 }
 
 
-
+/**
+ *
+ * @param domourl
+ * @param user
+ * @param pwd
+ */
 function setAccess( domourl, user, pwd ) {
     domoticzUrl = domourl;
     username    = user;
