@@ -52,12 +52,12 @@ domoJS.loadState = function( path ) {
     // make it easier to find which file we read the state from
     state.file = path;
 
-    // make all rooms instances of Room prototypal object
+    // make all rooms inherit from Room prototypal object
     // (I love prototypal inheritance !!!)
     for (let room in state.rooms)
         state.rooms[room].__proto__ = Room;
 
-    // make all heaters instances of Heater prototypal object
+    // make all heaters inherit from Heater prototypal object
     // (Have I ever told you I loved prototypal inheritance?)
     forEachHeater( function(heater) {
         heater.__proto__ = Heater;
@@ -103,6 +103,7 @@ domoJS.loadWantedTemps = function( path ) {
     // say(" Wanted Temperatures:"); console.log(wantedTemps);
 };
 
+
 /**
  * Get the heater switches status
  *  send Domoticz API call
@@ -121,10 +122,27 @@ domoJS.updateSwitchesStatus = function() {
  * @param oneSwitch
  */
 function processOneSwitchData ( oneSwitch ) {
+
+    // we automatically switch off the remote control buttons after two hours
+    if (oneSwitch.Name.substr(0,4) === 'TC1B') {
+        console.log(oneSwitch);
+        if (oneSwitch.Data === 'On') {
+            let lastUpdate = Date(oneSwitch.LastUpdate);
+            let lastUpdateInMinutes = Math.round( (Date() - lastUpdate) / 1000 / 60 );
+            // console.log("Remote Control Button " + mySwitch.Name + " clicked " + lastUpdateInMinutes + " minutes ago");
+            if (lastUpdateInMinutes > 120) {
+                // we send the command to switch off the remote control button to domoticz
+                domoAPI.switchDevice(oneSwitch.idx, 'Off');
+                say("Shut down Remote Control Button " + oneSwitch.Name + " after 2 hours");
+            }
+        }
+        return;
+    }
+
     // quite ugly: we loop on all heaters to find the right one
     forEachHeater( function( heater ) {
 
-        if ( heater.devIdx == oneSwitch.idx) {
+        if ( heater.devIdx === oneSwitch.idx) {
             // we are on the right heater switch
             // we copy data
             heater.name  = oneSwitch.Name;
@@ -132,23 +150,6 @@ function processOneSwitchData ( oneSwitch ) {
         }
         // console.log(heater);
     });
-
-    return;
-
-
-    // we automatically switch off the remote control buttons after two hours
-    if (mySwitch.Name.substr(0,4) === 'TC1B') {
-        if (mySwitch.Data === 'On') {
-            let lastUpdate = new Date(mySwitch.LastUpdate);
-            let lastUpdateInMinutes = Math.round( (now - lastUpdate) / 1000 / 60 );
-            // console.log("Remote Control Button " + mySwitch.Name + " clicked " + lastUpdateInMinutes + " minutes ago");
-            if (lastUpdateInMinutes > 120) {
-                // we send the command to switch off the remote control button to domoticz
-                https.get(url + '&type=command&param=switchlight&idx=' + devices[mySwitch.Name] + '&switchcmd=Off');
-                say("Shut down Remote Control Button " + mySwitch.Name + " after 2 hours");
-            }
-        }
-    }
 
     // console.log(state);
 }

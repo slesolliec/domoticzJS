@@ -16,10 +16,10 @@ function say( msg ) {
 
 const Heater = {};
 
-// private properties
+// private properties ???
 // I guess the properties here will just be private but will be of the unique
-// Heater object and not private properties of each instance of Heater
-// how do I create private properties on the instance level ???
+// Heater prototypal object and not private properties of each "instance of" Heater
+// how do I create private properties on the "instance" level ???
 
 // public properties
 Heater.name       = '';
