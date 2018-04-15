@@ -1,9 +1,10 @@
 "use strict";
 
-/*
+/**
     This module is to extend the Date() object without touching the original Date() in case
     it is also extended in another way by a third party application.
-    I followed the good advices from https://stackoverflow.com/questions/6075231/how-to-extend-the-javascript-date-object
+    I followed the good advices from:
+       https://stackoverflow.com/questions/6075231/how-to-extend-the-javascript-date-object
     The main hack is to fiddle with the prototype chain so the object is a myDate >> Date >> Object.
  */
 
@@ -21,7 +22,7 @@
  * @constructor
  */
 function MyDate(a, b, c, d, e, f, g) {
-    var x;
+    let x;
     switch (arguments.length) {
         case 0:
             x = new Date();
@@ -57,7 +58,7 @@ function MyDate(a, b, c, d, e, f, g) {
 MyDate.prototype.__proto__ = Date.prototype;
 
 // so basically, MyDate is simply a Date object, which I can now safely extend
-// without wrecking havocs in Date type.
+// without wrecking havoc in Date type.
 
 
 /**

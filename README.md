@@ -28,3 +28,14 @@ That way I have a precise view of my power and money consumption for each room f
 
 :star: Don't hesitate to star that repo if it was of any use for you  ;-)
 
+
+
+# State machine
+
+This module is basically managing the state machine that represents the house.
+The state is inside the state variable. Insite that state var, we have the rooms object that contains all the room objects.
+Insite de rooms, we have all the heaters that are in the heaters object that contains all the heater objects.
+So for example, we have:
+state.rooms.Kitchen.heaters.35 : that is the heater with device ID 35 (in Domoticz) in the room called Kitchen.
+See example of state. (link to add)
+

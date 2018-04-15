@@ -2,6 +2,8 @@
 
 /**
 
+ Protocal utility object.
+
  This manages all requests to Domoticz.
  So if there is a change in Domoticz API, all modifications should only be done here.
  The rest of the application should be independent of the Domoticz API protocol.

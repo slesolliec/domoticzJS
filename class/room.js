@@ -1,5 +1,11 @@
 "use strict";
 
+/**
+ * Room prototypal object.
+ * Must be inherited from by all rooms in the state object.
+ * @type {MyDate}
+ */
+
 const MyDate = require('./date');
 
 const Room = {};

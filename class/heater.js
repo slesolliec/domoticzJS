@@ -1,5 +1,11 @@
 "use strict";
 
+/**
+ * Heater prototypal object.
+ * Must be inherited from by all heater objects in state object.
+ * @type {{}}
+ */
+
 
 const domoAPI = require('./domoticzAPI');
 
