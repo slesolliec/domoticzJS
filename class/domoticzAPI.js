@@ -10,6 +10,8 @@
 
 const https  = require("http");
 
+const domoticzAPI = {};
+
 let url      = '';
 let domoticzUrl;
 let username;
@@ -18,6 +20,7 @@ let password;
 
 /**
  * my stupide console.log wrapper
+ * @param {string} msg ; the message that will be logged
  */
 function say( msg ) {
     console.log("     " + msg);
@@ -25,20 +28,25 @@ function say( msg ) {
 
 
 /**
- *
+ * this must be called once before all the other request
  * @param domourl
  * @param user
  * @param pwd
  */
-function setAccess( domourl, user, pwd ) {
+domoticzAPI.setAccess = function ( domourl, user, pwd ) {
     domoticzUrl = domourl;
     username    = user;
     password    = pwd;
-}
+};
 
 
+/**
+ * we compute the url to call for accessing Domoticz
+ * @returns {string}
+ */
 function getUrl() {
 
+    // we compute this only once
     if ( url === '') {
         // url of Domoticz JSON API protected by username / password
         url = domoticzUrl
@@ -50,12 +58,13 @@ function getUrl() {
     return url;
 }
 
+
 /**
- *
- * @param {function} callback : the function that will be applied to each switch data
+ * we get the heater switches data (status, last update, ...)
+ * @param {function} callback1 : the function that will be applied to each switch data
  * @param {function} callbackfinal : the function that will be applied once all switches have been processed
  */
-function getSwitchesInfo( callback, callbackfinal ) {
+domoticzAPI.getSwitchesInfo = function( callback1, callbackfinal ) {
 
     let switchesData = '';
 
@@ -64,16 +73,20 @@ function getSwitchesInfo( callback, callbackfinal ) {
         res.on("data", function(data) { switchesData += data; });
         res.on("end",  function() {
             switchesData = JSON.parse(switchesData);
-            switchesData.result.forEach( callback );
+            switchesData.result.forEach( callback1 );
 
             callbackfinal();
         });
     });
 
-}
+};
 
 
-function getTemperatures( callback ) {
+/**
+ * we get all the temperature probes info (data, last update, ...)
+ * @param {function} callback : will be call for each temperature probe
+ */
+domoticzAPI.getTemperatures = function( callback ) {
 
     let tempData = '';
 
@@ -87,19 +100,19 @@ function getTemperatures( callback ) {
         });
   });
 
-}
+};
 
 
-function switchDevice( deviceIdx, command ) {
+/**
+ * send a switch command to a heater switch
+ * @param {number} deviceIdx : id of the switch (in Domoticz's database)
+ * @param {string} command : On or Off
+ */
+domoticzAPI.switchDevice = function( deviceIdx, command ) {
     // say( "Switch device " + deviceIdx + " " + command);
     https.get( getUrl() + '&type=command&param=switchlight&idx=' + deviceIdx + '&switchcmd=' + command);
-}
-
-
-
-module.exports = {
-    setAccess,
-    getSwitchesInfo,
-    getTemperatures,
-    switchDevice
 };
+
+
+
+module.exports = domoticzAPI;
