@@ -9,6 +9,8 @@
 const MyDate = require('./date');
 
 const Room = {
+    wantedTemp:  10,
+    tempModifier: 0,
     heaters: {}
 };
 
@@ -36,23 +38,26 @@ Room.setTemperature = function( temperature ) {
  * Checks if heaters should be turned on or off
  */
 Room.checkHeaters = function() {
+
+    const realWantedTemp = this.wantedTemp + this.tempModifier;
+
     // we now see if heaters need to be switched on or off
-    if (this.temp < this.wantedTemp) {
+    if (this.temp < realWantedTemp) {
         // it's too cold: we turn heater on if not already on
-        say( constantLength( this.name ) + " is cold: " + this.temp + '/' + this.wantedTemp );
+        say( constantLength( this.name ) + " is cold: " + this.temp + '/' + realWantedTemp );
 
         // switch heaters on
         this.switchHeatersOn();
 
-    } else if (this.temp > this.wantedTemp) {
+    } else if (this.temp > realWantedTemp) {
         // it's too how: we turn heater off if not already off
-        say( constantLength( this.name ) + " is hot : " + this.temp + '/' + this.wantedTemp);
+        say( constantLength( this.name ) + " is hot : " + this.temp + '/' + realWantedTemp);
 
         // switch heaters off
         this.switchHeatersOff();
 
     } else {
-        say( constantLength( this.name ) + " is ok  : " + this.temp + '/' + this.wantedTemp);
+        say( constantLength( this.name ) + " is ok  : " + this.temp + '/' + realWantedTemp);
     }
 };
 

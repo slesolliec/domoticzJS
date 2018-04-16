@@ -134,8 +134,27 @@ function processOneSwitchData ( oneSwitch ) {
                 // we send the command to switch off the remote control button to domoticz
                 domoAPI.switchDevice(oneSwitch.idx, 'Off');
                 say("Shut down Remote Control Button " + oneSwitch.Name + " after 2 hours");
+
+                // this is just for the following lines (Remote Control buttons management)
+                oneSwitch.Data = 'Off';
             }
         }
+
+        // this part will go when web interface is implemented
+        if (oneSwitch.Date === 'On') {
+            switch (oneSwitch.Name) {
+                case 'TC1B1':  state.rooms['Kitchen'].tempModifier = 1;  break;
+                case 'TC1B2':  state.rooms['Living'].tempModifier  = 1;  break;
+                case 'TC1B3':  state.rooms['Bed'].tempModifier     = 2;  break;
+            }
+        } else {
+            switch (oneSwitch.Name) {
+                case 'TC1B1':  state.rooms['Kitchen'].tempModifier = 0;  break;
+                case 'TC1B2':  state.rooms['Living'].tempModifier  = 0;  break;
+                case 'TC1B3':  state.rooms['Bed'].tempModifier     = 0;  break;
+            }
+        }
+
         return;
     }
 

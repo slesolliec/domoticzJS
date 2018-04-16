@@ -78,23 +78,7 @@ function getWantedTemp( room, state) {
     return wanted;
 }
 
-// this is the wanted temp in each room without the remote control command
-// and without the special scenario for the Bathroom
-function getBaseWantedTemp ( room, state ) {
 
-    if (state === 'gone')  return 12;
-
-    var now5 = now.stringTime5();
-    var wantedTemp = 12;
-
-    for (var keyHours in wantedTemps[room]) {
-        if (now5 > keyHours) {
-            wantedTemp = wantedTemps[room][keyHours];
-        }
-    }
-
-    return Number(wantedTemp);
-}
 
 
 //  At last some good tuto for accessing Google Sheets with node
