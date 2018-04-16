@@ -10,15 +10,19 @@
 
 // load main module
 const domoJS = require("./index");
+const gsheetAPI = require("./class/googleSheetAPI");
 
 // load configs (put that file where it suits you)
 domoJS.loadConfigs( __dirname + '/configs.json');
+
+// gsheetAPI.loadConfigs(  __dirname + '/configs.json' );
+// gsheetAPI.getTempsFromGoogleSheet();
 
 // load house state (put that file where you want)
 domoJS.loadState( __dirname + '/house_state.json');
 
 // load wanted temperatures
-domoJS.loadWantedTemps( __dirname + '/wanted_temperatures.json');
+domoJS.loadWantedTemps( __dirname + '/wantedTemps.json');
 
 // we get the state of the switches of the heaters
 // then it fetches current temperatures from Domoticz
@@ -27,61 +31,17 @@ domoJS.updateSwitchesStatus();
 
 return;
 
-// compute consumption ?? and update Calc sheet ??
+// todo: update Calc sheet
 
-
-// save down state ??
-
-
-// domoJS.say("Hello");
-
-
-let tempData      = '';   // this stores the temperatures
-let switchesData  = '';   // this stores the switches states
-
-
-// gives the idx of certain devices so we can send the commands to the right device
-const devices = {
-    'TC1B1': 20,
-    'TC1B2': 29,
-    'TC1B3': 25
-};
-
-
-// here the main flow is finished.
-// all that follows is just function definitions
+// todo: save down state
 
 
 
 
 
 
-// stupid formatting function to get nicely aligned logs
-function constantLength ( str ) {
-    return  (str + '      ').slice(0,8);
-}
 
-
-
-// get the wanted temperature given the room and the state of the house
-function getWantedTemp( room, state) {
-    // we get the normal wanted temp
-    let wanted = getBaseWantedTemp( room, state);
-
-    // but we can add some warmth with our Remote Control
-    switch ( room ) {
-        case 'Kitchen':  if (heaters.TC1B1 === 'On')   wanted += 1;   break;
-        case 'Living' :  if (heaters.TC1B2 === 'On')   wanted += 1;   break;
-        case 'Bed'    :  if (heaters.TC1B3 === 'On')   wanted += 2;   break;
-    }
-
-    return wanted;
-}
-
-
-
-
-//  At last some good tuto for accessing Google Sheets with node
+//  A good tutorial for accessing Google Sheets with node
 //   https://www.twilio.com/blog/2017/03/google-spreadsheets-and-javascriptnode-js.html
 function uploadToGoogleSheet() {
 
