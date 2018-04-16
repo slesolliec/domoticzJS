@@ -125,7 +125,7 @@ function processOneSwitchData ( oneSwitch ) {
 
     // we automatically switch off the remote control buttons after two hours
     if (oneSwitch.Name.substr(0,4) === 'TC1B') {
-        console.log(oneSwitch);
+        // console.log(oneSwitch);
         if (oneSwitch.Data === 'On') {
             let lastUpdate = Date(oneSwitch.LastUpdate);
             let lastUpdateInMinutes = Math.round( (Date() - lastUpdate) / 1000 / 60 );
@@ -159,7 +159,6 @@ function processOneSwitchData ( oneSwitch ) {
  * Count each minute each heater has been ON.
  * Scatter those minutes between High price hours and low price hours.
  */
-// todo: HC and HP should belong to rooms instead of each heaters
 function countConsumption() {
 
     // console.log(state);
@@ -222,30 +221,6 @@ function processOneTemperatureData (thermometer) {
 
     // todo: a check on the last update to catch empty batteries
     // if (thermometer.LastUpdate( la date en CET ) > 1 heure et 5 minutes (pour être DST23 proof) = alerte !!
-
-
-    return;
-
-    // sometimes, the chacom miss an order sent by the RFXCom
-    // so we resend command every quarter if necessary
-    if (now.getMinutes() % 15 !== 0) return;
-    // when we are gone, we resent orders only once every 4 hours
-    if ((getState( now ) === 'gone') && (( now.getHours() % 4 !== 0) || ( now.getMinutes() !== 0 )) ) return;
-
-    if (thermometer.Temp < wantedTemp - 0.3) {
-        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
-            if ( heaters[room] === 'On')   switchOn( room );
-        } else {
-            if ( heaters[room] === 'Off')  switchOn( room );
-        }
-    } else if (thermometer.Temp > wantedTemp + 0.3) {
-        if (( room === 'Bath' ) || ( room === 'Kitchen' )) {
-            if ( heaters[room] === 'Off')  switchOff( room );
-        } else {
-            if ( heaters[room] === 'On')   switchOff( room );
-        }
-    }
-
 }
 
 // creating aliases so state and configs are visble from the outside

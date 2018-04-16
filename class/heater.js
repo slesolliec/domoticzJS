@@ -29,6 +29,7 @@ Heater.HC         = 0;
 Heater.HP         = 0;
 Heater.nbHitsOn   = 0;
 Heater.nbHitsOff  = 0;
+Heater.lastUpdate = new Date().toISOString();
 Heater.isInverted = false;
 Heater.power      = 1000;
 
@@ -47,6 +48,8 @@ Heater.dump      = function() {
 // switching on a heater
 Heater.switchOn  = function() {
 
+    const now = new Date();
+
     // this sends the request
     // warning: inner functions (closures) normally loose access to this
     // call it with doSwitch.call(this); to get this back
@@ -60,23 +63,41 @@ Heater.switchOn  = function() {
 
     // first switching
     if (this.state === 'Off') {
-        say( "Switching ON  " + this.name );
-        this.nbHitsOn  = 1;
+        say("Switching ON  " + this.name);
+        this.nbHitsOn = 1;
         this.nbHitsOff = 0;
-        this.state     = 'On';
-        doSwitch.call(this);
-
-    // resend switch order
-    } else if ((this.nbHitsOn < 3) && ( new Date().getMinutes() % 5 === 0))  {
-        say( "Switching ON  " + this.name + " (resent)" );
-        this.nbHitsOn++;
+        this.state = 'On';
+        this.lastUpdate = now.toISOString();
         doSwitch.call(this);
     }
 
+    // sometimes, the chacom heater switch misses an order sent by the RFXCom
+    // so we resend and possibly re-resend command after 15 minutes if necessary
+    if (this.nbHitsOn > 2)
+        return;
+
+    // At first, I would check temperature was not above wanted, but in summer
+    // it could lead to having heaters ON for hours when temperature is above let's say 25°
+    // if (this.getRoom().temp <= this.getRoom().wantedTemp)
+    //    return;
+
+    // check it's been at least 15 minutes
+    if ( (now.getTime() - new Date( this.lastUpdate ).getTime()) / 1000 < 900 )
+        return;
+
+    // resend switch order
+    say( "Switching ON " + this.name + " (resent)" );
+    this.nbHitsOn++;
+    this.lastUpdate = now.toISOString();
+    doSwitch.call(this);
 };
+
 
 // switching off a heater
 Heater.switchOff = function() {
+
+    const now = new Date();
+
     // this sends the request
     // warning: inner functions (closures) normally loose access to this
     // call it with doSwitch.call(this); to get this back
@@ -90,18 +111,35 @@ Heater.switchOff = function() {
 
     // first switching
     if (this.state === 'On') {
-        say( "Switching OFF " + this.name );
-        this.nbHitsOn  = 0;
-        this.nbHitsOff = 1;
-        this.state     = 'Off';
+        say("Switching OFF " + this.name);
+        this.nbHitsOn   = 0;
+        this.nbHitsOff  = 1;
+        this.state      = 'Off';
+        this.lastUpdate = now.toISOString();
         doSwitch.call(this);
+        return;
+    }
+
+    // sometimes, the chacom heater switch misses an order sent by the RFXCom
+    // so we resend and possibly re-resend command after 15 minutes if necessary
+    if (this.nbHitsOff > 2)
+        return;
+
+    // At first, I would check temperature was not above wanted, but in summer
+    // it could lead to having heaters ON for hours when temperature is above let's say 25°
+    // if (this.getRoom().temp <= this.getRoom().wantedTemp)
+    //    return;
+
+    // check it's been at least 15 minutes
+    if ( (now.getTime() - new Date( this.lastUpdate ).getTime()) / 1000 < 900 )
+        return;
 
     // resend switch order
-    } else if ((this.nbHitsOff < 3) && ( new Date().getMinutes() % 5 === 0))  {
-        say( "Switching OFF " + this.name + " (resent)" );
-        this.nbHitsOff++;
-        doSwitch.call(this);
-    }
+    say( "Switching OFF " + this.name + " (resent)" );
+    this.nbHitsOff++;
+    this.lastUpdate = now.toISOString();
+    doSwitch.call(this);
+
 };
 
 

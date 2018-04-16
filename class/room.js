@@ -8,7 +8,9 @@
 
 const MyDate = require('./date');
 
-const Room = {};
+const Room = {
+    heaters: {}
+};
 
 // this should not be here ....
 function say( msg ) {

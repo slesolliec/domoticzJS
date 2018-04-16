@@ -56,13 +56,7 @@
             }
         },
         "Pallier": {
-            "name": "Pallier",
-            "heaters": {
-                "200": {
-                    "name": "HeaterBath",
-                    "devIdx": 39
-                }
-            }
+            "name": "Pallier"
         }
     }
 }
