@@ -3,3 +3,4 @@ client-secret.json
 configs.json
 domo.log
 node_modules/
+wantedTemps.json

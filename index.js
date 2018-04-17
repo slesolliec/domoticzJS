@@ -140,7 +140,7 @@ function processOneSwitchData ( oneSwitch ) {
         }
 
         // this part will go when web interface is implemented
-        if (oneSwitch.Date === 'On') {
+        if (oneSwitch.Data === 'On') {
             switch (oneSwitch.Name) {
                 case 'TC1B1':  domoJS.state.rooms['Kitchen'].tempModifier = 1;  break;
                 case 'TC1B2':  domoJS.state.rooms['Living'].tempModifier  = 1;  break;
@@ -207,21 +207,17 @@ function countConsumption() {
 
     // update last update in the state and save it to disk
     domoJS.state.lastUpdate = now.toISOString();
-//    fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
-    // uploadToGoogleSheet();
+    writeState();
 
-    // let's follow by requesting the temperatures
-    getTemperatures();
-}
-
-
-/**
- * We get the current temperatures from Domoticz.
- */
-function getTemperatures() {
     // get temperatures from Domoticz, pass the callback that is going to be applied on each room temperature
     domoAPI.getTemperatures( processOneTemperatureData );
 }
+
+
+function writeState() {
+  fs.writeFile( domoJS.state.file, JSON.stringify(domoJS.state), function(err){ if(err) throw err; } );
+}
+
 
 
 /**

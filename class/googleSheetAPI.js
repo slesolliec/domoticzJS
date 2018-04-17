@@ -1,12 +1,13 @@
 "use strict";
 
+//  A good tutorial for accessing Google Sheets with node
+//   https://www.twilio.com/blog/2017/03/google-spreadsheets-and-javascriptnode-js.html
+
 const googleSheetAPI = {};
 
 const MyDate            = require('./date');
 const fs                = require('fs');
 const GoogleSpreadsheet = require('google-spreadsheet');
-
-let configs;
 
 
 /**
@@ -110,10 +111,6 @@ googleSheetAPI.getTempsFromGoogleSheet = function( configs ) {
 };
 
 
-
-
-//  A good tutorial for accessing Google Sheets with node
-//   https://www.twilio.com/blog/2017/03/google-spreadsheets-and-javascriptnode-js.html
 googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
 
     const now = new MyDate();

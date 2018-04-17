@@ -7,23 +7,27 @@
 // load main module
 const domoJS    = require("./index");
 const gsheetAPI = require("./class/googleSheetAPI");
+const path      = require('path');
 
 // load configs (put that file where it suits you)
-domoJS.loadConfigs( __dirname + '/configs.json');
+domoJS.loadConfigs( path.join(__dirname, 'configs.json'));
 
 // gsheetAPI.loadConfigs(  __dirname + '/configs.json' );
-// gsheetAPI.getTempsFromGoogleSheet();
+gsheetAPI.getTempsFromGoogleSheet( domoJS.configs );
 
 // load house state (put that file where you want)
-domoJS.loadState( __dirname + '/house_state.json');
+domoJS.loadState( path.join(__dirname, 'house_state.json'));
 
 // load wanted temperatures
-domoJS.loadWantedTemps( __dirname + '/wantedTemps.json');
+domoJS.loadWantedTemps( path.join(__dirname, 'wantedTemps.json'));
 
 // we get the state of the switches of the heaters
 // then it fetches current temperatures from Domoticz
 // then it sends ON / OFF commands
 domoJS.updateSwitchesStatus();
+
+// this should be run only once an hour
+// gsheetAPI.uploadToGoogleSheet( domoJS.state );
 
 return;
 
