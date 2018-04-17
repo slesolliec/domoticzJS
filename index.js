@@ -12,12 +12,11 @@ const domoAPI = require('./class/domoticzAPI');
 const Room    = require('./class/room');
 const Heater  = require('./class/heater');
 
-
 const domoJS = {};
+domoJS.configs = {};
+domoJS.state   = {};
 
 const now = new MyDate();
-let configs;
-let state;
 
 
 /**
@@ -34,10 +33,10 @@ function say( msg ) {
  * @param path
  */
 domoJS.loadConfigs = function( path ) {
-    configs = JSON.parse( fs.readFileSync( path ) );
+    domoJS.configs = JSON.parse( fs.readFileSync( path ) );
 
     // I don't understand why domoAPI does not have access to configs
-    domoAPI.setAccess( configs.domoticz, configs.username, configs.password );
+    domoAPI.setAccess( domoJS.configs.domoticz, domoJS.configs.username, domoJS.configs.password );
 };
 
 
@@ -47,15 +46,15 @@ domoJS.loadConfigs = function( path ) {
  */
 domoJS.loadState = function( path ) {
     // load state from file
-    state = JSON.parse( fs.readFileSync( path ) );
+    domoJS.state = JSON.parse( fs.readFileSync( path ) );
 
     // make it easier to find which file we read the state from
-    state.file = path;
+    domoJS.state.file = path;
 
     // make all rooms inherit from Room prototypal object
     // (I love prototypal inheritance !!!)
-    for (let room in state.rooms)
-        state.rooms[room].__proto__ = Room;
+    for (let room in domoJS.state.rooms)
+        domoJS.state.rooms[room].__proto__ = Room;
 
     // make all heaters inherit from Heater prototypal object
     // (Have I ever told you I loved prototypal inheritance?)
@@ -70,9 +69,9 @@ domoJS.loadState = function( path ) {
  * @param {function} func function to be applied to each heater
  */
 function forEachHeater( func ) {
-    for ( let room_name in state.rooms )
-        for ( let heater_idx in state.rooms[room_name].heaters )
-            func( state.rooms[room_name].heaters[heater_idx] );
+    for ( let room_name in domoJS.state.rooms )
+        for ( let heater_idx in domoJS.state.rooms[room_name].heaters )
+            func( domoJS.state.rooms[room_name].heaters[heater_idx] );
 }
 
 
@@ -96,9 +95,9 @@ domoJS.loadWantedTemps = function( path ) {
             if (now5 > keyHours)
                 wantedTemp = wantedTemps[room][keyHours];
 
-        state.rooms[room].wantedTemp = Number(wantedTemp);
+        domoJS.state.rooms[room].wantedTemp = Number(wantedTemp);
 
-        // console.log(state.rooms[room]);
+        // console.log(domoJS.state.rooms[room]);
     }
     // say(" Wanted Temperatures:"); console.log(wantedTemps);
 };
@@ -143,15 +142,15 @@ function processOneSwitchData ( oneSwitch ) {
         // this part will go when web interface is implemented
         if (oneSwitch.Date === 'On') {
             switch (oneSwitch.Name) {
-                case 'TC1B1':  state.rooms['Kitchen'].tempModifier = 1;  break;
-                case 'TC1B2':  state.rooms['Living'].tempModifier  = 1;  break;
-                case 'TC1B3':  state.rooms['Bed'].tempModifier     = 2;  break;
+                case 'TC1B1':  domoJS.state.rooms['Kitchen'].tempModifier = 1;  break;
+                case 'TC1B2':  domoJS.state.rooms['Living'].tempModifier  = 1;  break;
+                case 'TC1B3':  domoJS.state.rooms['Bed'].tempModifier     = 2;  break;
             }
         } else {
             switch (oneSwitch.Name) {
-                case 'TC1B1':  state.rooms['Kitchen'].tempModifier = 0;  break;
-                case 'TC1B2':  state.rooms['Living'].tempModifier  = 0;  break;
-                case 'TC1B3':  state.rooms['Bed'].tempModifier     = 0;  break;
+                case 'TC1B1':  domoJS.state.rooms['Kitchen'].tempModifier = 0;  break;
+                case 'TC1B2':  domoJS.state.rooms['Living'].tempModifier  = 0;  break;
+                case 'TC1B3':  domoJS.state.rooms['Bed'].tempModifier     = 0;  break;
             }
         }
 
@@ -181,13 +180,13 @@ function processOneSwitchData ( oneSwitch ) {
 function countConsumption() {
 
     // console.log(state);
-    const lastStateUpdate = new MyDate(state.lastUpdate);
+    const lastStateUpdate = new MyDate(domoJS.state.lastUpdate);
     const minSinceLastRun = Math.round( (now - lastStateUpdate) / 1000 / 60 );
     const HCorHP = lastStateUpdate.getHCHP();
 
     // we add the number of minutes each heater has been on (in state)
-    for (let room_name in state.rooms) {
-        let room = state.rooms[room_name];
+    for (let room_name in domoJS.state.rooms) {
+        let room = domoJS.state.rooms[room_name];
 
         for (let heater_idx in room.heaters) {
             let heater = room.heaters[heater_idx];
@@ -207,7 +206,7 @@ function countConsumption() {
     }
 
     // update last update in the state and save it to disk
-    state.lastUpdate = now.toISOString();
+    domoJS.state.lastUpdate = now.toISOString();
 //    fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
     // uploadToGoogleSheet();
 
@@ -236,15 +235,11 @@ function processOneTemperatureData (thermometer) {
     let room       = thermometer.Name.substring(4);
 
     // update state
-    state.rooms[room].setTemperature(thermometer.Temp);
+    domoJS.state.rooms[room].setTemperature(thermometer.Temp);
 
     // todo: a check on the last update to catch empty batteries
     // if (thermometer.LastUpdate( la date en CET ) > 1 heure et 5 minutes (pour être DST23 proof) = alerte !!
 }
 
-// creating aliases so state and configs are visble from the outside
-domoJS.configs = configs;
-domoJS.state   = state;
 
 module.exports = domoJS;
-

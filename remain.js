@@ -4,10 +4,6 @@
 // Because it is only active a few seconds per minutes,
 // it is supposed to run as a cron job in order to eat as few ram as possible.
 
-
-// const https = require("http");
-// const fs    = require("fs");
-
 // load main module
 const domoJS    = require("./index");
 const gsheetAPI = require("./class/googleSheetAPI");
@@ -34,5 +30,3 @@ return;
 // todo: update Calc sheet
 
 // todo: save down state
-
-
