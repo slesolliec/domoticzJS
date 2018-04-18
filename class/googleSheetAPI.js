@@ -99,15 +99,12 @@ googleSheetAPI.getTempsFromGoogleSheet = function( configs ) {
 
                 say(temps);
 
-                // save temps
+                // save wanted temperatures cache file
+                // so that we don't need to bother Google Sheets every minute
                 fs.writeFile( wantedTempsFile, JSON.stringify(temps), function(err){ if(err) throw err; } );
-
             });
-
         });
-
     });
-
 };
 
 
@@ -144,6 +141,12 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
                 cells.forEach( function (oneCell) {
                     say('Cell R' + oneCell.row + ' C' + oneCell.col + ' = ' + oneCell.value);
                 });
+
+                for ( let roomName in state.rooms) {
+                    let oneRoom = state.rooms[roomName];
+
+
+                }
 
                 /*
 
