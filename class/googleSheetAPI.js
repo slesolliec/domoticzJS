@@ -145,6 +145,7 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
                 for ( let roomName in state.rooms) {
                     let oneRoom = state.rooms[roomName];
 
+                    say( roomName + ' : HC=' + oneRoom.HC + ' HP=' + oneRoom.HP);
 
                 }
 

@@ -28,9 +28,3 @@ domoJS.updateSwitchesStatus();
 
 // this should be run only once an hour
 gsheetAPI.uploadToGoogleSheet( domoJS.configs, domoJS.state );
-
-return;
-
-// todo: update Calc sheet
-
-// todo: save down state
