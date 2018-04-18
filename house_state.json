@@ -1,10 +1,11 @@
 {
-    "lastUpdate": "2018-04-11T21:52:39.168Z",
+    "lastUpdate": "2018-04-18T16:39:04.492Z",
     "rooms": {
         "Kitchen": {
             "name": "Kitchen",
             "idx": 2,
             "wantedTemp": 18,
+            "tempModifier": 0,
             "heaters": {
                 "30": {
                     "devIdx": 30
@@ -17,17 +18,20 @@
         "Living": {
             "name": "Living",
             "idx": 3,
-            "wantedTemp": 19,
+            "wantedTemp": 18,
+            "tempModifier": 0,
+            "HC": 17,
+            "HP": 10,
             "heaters": {
-                "13": {
-                    "name": "HeaterLiving",
-                    "devIdx": 13,
-                    "isInverted": true,
-                    "power": 1500
-                },
                 "12": {
                     "name": "HeaterLivingChimney",
                     "devIdx": 12,
+                    "isInverted": true,
+                    "power": 1500
+                },
+                "13": {
+                    "name": "HeaterLiving",
+                    "devIdx": 13,
                     "isInverted": true,
                     "power": 1500
                 },
@@ -39,6 +43,8 @@
         },
         "Bed": {
             "name": "Chambre",
+            "wantedTemp": 17,
+            "tempModifier": 0,
             "heaters": {
                 "3": {
                     "name": "HeaterBed",
@@ -48,6 +54,7 @@
         },
         "Bath": {
             "name": "SdBain",
+            "wantedTemp": 21,
             "heaters": {
                 "39": {
                     "name": "HeaterBath",
@@ -58,5 +65,6 @@
         "Pallier": {
             "name": "Pallier"
         }
-    }
+    },
+    "file": "/home/stephane/WebstormProjects/domo/house_state.json"
 }

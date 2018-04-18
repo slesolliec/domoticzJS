@@ -27,7 +27,7 @@ domoJS.loadWantedTemps( path.join(__dirname, 'wantedTemps.json'));
 domoJS.updateSwitchesStatus();
 
 // this should be run only once an hour
-// gsheetAPI.uploadToGoogleSheet( domoJS.state );
+gsheetAPI.uploadToGoogleSheet( domoJS.configs, domoJS.state );
 
 return;
 
