@@ -142,30 +142,18 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
                     say('Cell R' + oneCell.row + ' C' + oneCell.col + ' = ' + oneCell.value);
                 });
 
+                let i = 0;  // column counter
+
                 for ( let roomName in state.rooms) {
                     let oneRoom = state.rooms[roomName];
 
                     say( roomName + ' : HC=' + oneRoom.HC + ' HP=' + oneRoom.HP);
 
-                }
+                    // we write the new cell's values
+                    if (oneRoom.HC !== 0) cells[1 + i * 4].value = oneRoom.HC;
+                    if (oneRoom.HP !== 0) cells[2 + i * 4].value = oneRoom.HP;
 
-                /*
-
-                // we write the new cell's values
-                if ((now.getHours() < 10) || (now.getHours() > 21)) {
-                    // we don't update HC after 10:00 or before 22:00
-                    if (state.Bed.HC     !== 0) cells[1].value  = state.Bed.HC;
-                    if (state.Living.HC  !== 0) cells[5].value  = state.Living.HC;
-                    if (state.Kitchen.HC !== 0) cells[9].value  = state.Kitchen.HC;
-                    if (state.Bath.HC    !== 0) cells[13].value = state.Bath.HC;
-                }
-
-                if ((now.getHours() > 5) || (now.getHours() < 23)) {
-                    // we don't update HP after 23:00 or before 06:00
-                    if (state.Bed.HP !== 0) cells[2].value = state.Bed.HP;
-                    if (state.Living.HP !== 0) cells[6].value = state.Living.HP;
-                    if (state.Kitchen.HP !== 0) cells[10].value = state.Kitchen.HP;
-                    if (state.Bath.HP !== 0) cells[14].value = state.Bath.HP;
+                    i++;
                 }
 
                 sheet.bulkUpdateCells(cells, function(err) {
@@ -174,21 +162,18 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
 
                     // we can zero values
                     if ( now.getHCHP() === 'HC') {
-                        state.Bed.HP     = 0;
-                        state.Living.HP  = 0;
-                        state.Kitchen.HP = 0;
-                        state.Bath.HP    = 0;
+                      for ( let roomName in state.rooms) {
+                          state.rooms[roomName].HP = 0;
+                      }
                     } else {
-                        state.Bed.HC     = 0;
-                        state.Living.HC  = 0;
-                        state.Kitchen.HC = 0;
-                        state.Bath.HC    = 0;
+                      for ( let roomName in state.rooms) {
+                          state.rooms[roomName].HC = 0;
+                      }
                     }
 
-                    // save state
-                    fs.writeFile("house_state.json", JSON.stringify(state), function(err){ if(err) throw err; } );
+                    // save state // should not be needed
+                    // fs.writeFile( domoJS.state.file, JSON.stringify(domoJS.state), function(err){ if(err) throw err; } );
                 });
-*/
 
             })
         });
