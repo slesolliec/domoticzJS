@@ -214,6 +214,9 @@ function countConsumption() {
 }
 
 
+/**
+ * Write down state in json file
+ */
 function writeState() {
   fs.writeFile( domoJS.state.file, JSON.stringify(domoJS.state), function(err){ if(err) throw err; } );
 }
@@ -236,6 +239,7 @@ function processOneTemperatureData (thermometer) {
     // todo: a check on the last update to catch empty batteries
     // if (thermometer.LastUpdate( la date en CET ) > 1 heure et 5 minutes (pour être DST23 proof) = alerte !!
 }
+
 
 
 module.exports = domoJS;

@@ -18,7 +18,10 @@ function say(msg) {
     console.log(msg);
 }
 
-
+/**
+ * We read wanted temperatures from the Google Calc sheet
+ * @param configs
+ */
 googleSheetAPI.getTempsFromGoogleSheet = function( configs ) {
 
     // setting current date
@@ -108,6 +111,11 @@ googleSheetAPI.getTempsFromGoogleSheet = function( configs ) {
 };
 
 
+/**
+ * We copy consumption data into a different Google Calc sheet
+ * @param configs
+ * @param state
+ */
 googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
 
     const now = new MyDate();
@@ -144,23 +152,24 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
 
                 let i = 0;  // column counter
 
+                // we write the new values from state.rooms.xx.HC and HP
                 for ( let roomName in state.rooms) {
                     let oneRoom = state.rooms[roomName];
 
                     say( roomName + ' : HC=' + oneRoom.HC + ' HP=' + oneRoom.HP);
 
-                    // we write the new cell's values
                     if (oneRoom.HC !== 0) cells[1 + i * 4].value = oneRoom.HC;
                     if (oneRoom.HP !== 0) cells[2 + i * 4].value = oneRoom.HP;
 
                     i++;
                 }
 
+                // we send the request to update the Google Calc sheet
                 sheet.bulkUpdateCells(cells, function(err) {
                     // block zeroing values if we got an error
                     if (err != null) throw err;
 
-                    // we can zero values
+                    // now that values are saved, we can zero some of them
                     if ( now.getHCHP() === 'HC') {
                       for ( let roomName in state.rooms) {
                           state.rooms[roomName].HP = 0;
@@ -172,7 +181,7 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
                     }
 
                     // save state // should not be needed
-                    // fs.writeFile( domoJS.state.file, JSON.stringify(domoJS.state), function(err){ if(err) throw err; } );
+                    fs.writeFile( state.file, JSON.stringify(state), function(err){ if(err) throw err; } );
                 });
 
             })
@@ -181,8 +190,6 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
     });
 
 };
-
-
 
 
 module.exports = googleSheetAPI;
