@@ -34,6 +34,7 @@ function constantLength ( str ) {
 
 
 Room.setTemperature = function( temperature ) {
+    // say(" Setting temperature "+ temperature + " to room " + this.name);
     this.temp = temperature;
     this.checkHeat();
 };
@@ -46,20 +47,22 @@ Room.checkHeat = function() {
 
     const realWantedTemp = this.wantedTemp + this.tempModifier;
 
+    // say("checking heat for room " + this.name);
+
     // we now see if heaters need to be switched on or off
     if (this.temp < realWantedTemp) {
         // it's too cold: we turn heater on if not already on
         say( constantLength( this.name ) + " is cold: " + this.temp + '/' + realWantedTemp );
 
         // switch heaters on
-        this.switchHeatersOn();
+        this.switchOn();
 
     } else if (this.temp > realWantedTemp) {
         // it's too how: we turn heater off if not already off
         say( constantLength( this.name ) + " is hot : " + this.temp + '/' + realWantedTemp);
 
         // switch heaters off
-        this.switchHeatersOff();
+        this.switchOff();
 
     } else {
         say( constantLength( this.name ) + " is ok  : " + this.temp + '/' + realWantedTemp);

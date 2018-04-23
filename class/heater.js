@@ -44,6 +44,8 @@ Heater.dump      = function() {
 // switching on a heater
 Heater.switchOn  = function() {
 
+    say( "sending switching ON  command to " +this.name );
+
     // this sends the request
     if (this.isInverted) {
         domoAPI.switchDevice( this.devIdx, 'Off')
@@ -56,6 +58,8 @@ Heater.switchOn  = function() {
 
 // switching off a heater
 Heater.switchOff = function() {
+
+    say( "sending switching OFF command to " +this.name );
 
     // this sends the request
     if (this.isInverted) {

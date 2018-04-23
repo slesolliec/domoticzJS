@@ -158,16 +158,51 @@ function processOneSwitchData ( oneSwitch ) {
     }
 
     // quite ugly: we loop on all heaters to find the right one
-    forEachHeater( function( heater ) {
+    for (let room_name in domoJS.state.rooms) {
+        let current_room = domoJS.state.rooms[room_name];
 
-        if ( heater.devIdx === oneSwitch.idx) {
-            // we are on the right heater switch
-            // we copy data
-            heater.name  = oneSwitch.Name;
-            heater.state = oneSwitch.Status;
+        for ( let heater_idx in current_room.heaters ) {
+            let current_heater = current_room.heaters[heater_idx];
+
+            if (heater_idx === oneSwitch.idx) {
+                // we are on the right heater switch
+                // we copy the heater name from Domoticz (ok, often useless)
+                current_heater.name  = oneSwitch.Name;
+
+                // now we check if heater and room state are coherent:
+                // room should impose the value of heater. If not coherent, we switch heater
+                if (current_room.state === 'On') {
+                    if (current_heater.isInverted) {
+                        if (oneSwitch.Status === 'On') {
+                            // something is wrong: heater should be aligned with room
+                            say("Heater "+ current_heater.name + " (inverted) is On and should be Off !!!");
+                            current_heater.switchOn();
+                        }
+                    } else {
+                        if (oneSwitch.Status === 'Off') {
+                            // something is wrong: heater should be aligned with room
+                            say("Heater "+ current_heater.name + " is Off and should be On !!!");
+                            current_heater.switchOn();
+                        }
+                    }
+                } else {
+                    if (current_heater.isInverted) {
+                        if (oneSwitch.Status === 'Off') {
+                            // something is wrong: heater should be aligned with room
+                            say("Heater "+ current_heater.name + " (inverted) is Off and should be On !!!");
+                            current_heater.switchOff();
+                        }
+                    } else {
+                        if (oneSwitch.Status === 'On') {
+                            // something is wrong: heater should be aligned with room
+                            say("Heater "+ current_heater.name + " is On and should be Off !!!");
+                            current_heater.switchOff();
+                        }
+                    }
+                }
+            }
         }
-        // console.log(heater);
-    });
+    }
 
     // console.log(state);
 }
@@ -207,10 +242,13 @@ function countConsumption() {
 
     // update last update in the state and save it to disk
     domoJS.state.lastUpdate = now.toISOString();
-    writeState();
 
     // get temperatures from Domoticz, pass the callback that is going to be applied on each room temperature
     domoAPI.getTemperatures( processOneTemperatureData );
+
+    // we save state in 5 seconds: we want to be sure that everything has been done
+    setTimeout( writeState, 5000);
+
 }
 
 
@@ -231,10 +269,10 @@ function processOneTemperatureData (thermometer) {
     // console.log(thermometer.Name);
 
     // we get the room from the name of the device: tempBed -> Bed
-    let room       = thermometer.Name.substring(4);
+    let room_name = thermometer.Name.substring(4);
 
     // update state
-    domoJS.state.rooms[room].setTemperature(thermometer.Temp);
+    domoJS.state.rooms[room_name].setTemperature(thermometer.Temp);
 
     // todo: a check on the last update to catch empty batteries
     // if (thermometer.LastUpdate( la date en CET ) > 1 heure et 5 minutes (pour être DST23 proof) = alerte !!
