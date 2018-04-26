@@ -222,21 +222,9 @@ function countConsumption() {
     // we add the number of minutes each heater has been on (in state)
     for (let room_name in domoJS.state.rooms) {
         let room = domoJS.state.rooms[room_name];
-
-        for (let heater_idx in room.heaters) {
-            let heater = room.heaters[heater_idx];
-
-            if ( heater.isInverted ) {
-                if (heater.state === 'Off') {
-                    heater[HCorHP] += minSinceLastRun;
-                }
-            } else {
-                if (heater.state === 'On') {
-                    heater[HCorHP] += minSinceLastRun;
-                }
-            }
-
-            // console.log( heater.name + " is " + heater.state);
+        if (room.state === 'On') {
+            room[HCorHP] += minSinceLastRun;
+            // console.log( room.name + " is " + room.state);
         }
     }
 
