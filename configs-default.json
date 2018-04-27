@@ -4,5 +4,6 @@
   "username":"yourUsername",
   "password":"yourPassword",
   "GoogleSheetID": "blahblah",
-  "GoogleTempSheetID": "blihblih"
+  "GoogleTempSheetID": "blihblih",
+  "GoogleAPIclientSecret": "/path/to/your/Google/client-secret.json"
 }

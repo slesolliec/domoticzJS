@@ -1,73 +1,70 @@
+/**
+
+    Exemple of house_state.json file.
+
+    List your rooms, and the heaters in your rooms.
+
+    Heaters' names are not important as they will be overwritten by what is defined in Domoticz.
+    devIdx is the device index in Domoticz. It also serves as the key of the heaters list.
+
+*/
 {
-    "lastUpdate": "2018-01-17T11:52:39.168Z",
+    "lastUpdate": "2018-04-23T17:07:01.705Z",
     "rooms": {
-        "Kitchen": {
-            "name":   "Kitchen",
-            "idx":    2,
-            "wantedTemp": 18,
+        "Bed": {
+            "name": "Bedroom",
             "heaters": {
-                "30": {
-                    "name":     "HeatKitchen",
-                    "devIdx":    30,
-                    "state":     "Off",
-                    "HC":         0,
-                    "HP":         0,
-                    "nbHitsOn":   0,
-                    "nbHitsOff":  0,
-                    "power":   1000
-                },
-                "36": {
-                    "name":     "HeatchenSmall",
-                    "devIdx":    36,
-                    "state":     "Off",
-                    "HC":         0,
-                    "HP":         0,
-                    "nbHitsOn":   0,
-                    "nbHitsOff":  0,
-                    "power":   1000
+                "3": {
+                    "name": "HeaterBed",
+                    "devIdx": 3,
+                    "isInverted": true,
+                    "power": 1500
                 }
             }
         },
-
         "Living": {
-            "name":   "Living",
-            "idx":    3,
-            "wantedTemp": 19,
+            "name": "Living",
+            "wantedTemp": 18,
             "heaters": {
-                "HeaterLiving": {
-                    "name":     "Heaterg",
-                    "devIdx":    13,
-                    "state":     "Off",
-                    "HC":         0,
-                    "HP":         0,
-                    "nbHitsOn":   0,
-                    "nbHitsOff":  0,
-                    "power":   1000
+                "12": {
+                    "name": "HeaterLivingChimney",
+                    "devIdx": 12,
+                    "isInverted": true,
+                    "power": 1500
                 },
-                "HeaterLivingChimney": {
-                    "name":     "HeateringChimney",
-                    "devIdx":    12,
-                    "state":     "Off",
-                    "HC":         0,
-                    "HP":         0,
-                    "nbHitsOn":   0,
-                    "nbHitsOff":  0,
-                    "power":   1000
+                "13": {
+                    "name": "HeaterLiving",
+                    "devIdx": 13,
+                    "isInverted": true,
+                    "power": 1500
                 },
-                "HeaterLivingCorridor": {
-                    "name":     "HeingCorridor",
-                    "devIdx":    37,
-                    "state":     "Off",
-                    "HC":         0,
-                    "HP":         0,
-                    "nbHitsOn":   0,
-                    "nbHitsOff":  0,
-                    "power":   1000
+                "37": {
+                    "name": "HeaterLivingCorridor",
+                    "devIdx": 37
+                }
+            }
+        },
+        "Kitchen": {
+            "name": "Kitchen",
+            "heaters": {
+                "30": {
+                    "devIdx": 30,
+                    "name": "HeaterKitchen"
+                },
+                "36": {
+                    "devIdx": 36,
+                    "name": "HeaterKitchenSmall"
+                }
+            }
+        },
+        "Bath": {
+            "name": "Bathroom",
+            "heaters": {
+                "39": {
+                    "name": "HeaterBath",
+                    "devIdx": 39
                 }
             }
         }
-
-
     }
 }
-

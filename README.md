@@ -31,6 +31,10 @@ There is nothing to setup in Domoticz for that. If you have access to Domoticz's
 
 So here are the scripts that I use at home. Feel free to fork them to your needs.
 
+They run on a Raspberry Pi on which also runs Domoticz with my RFXCom.
+
+Open the example.js file to get hints on how to cron that script so that it runs every minute.
+
 
 # Resending commands
 
@@ -45,6 +49,22 @@ Insite de rooms, we have all the heaters that are in the heaters object that con
 So for example, we have:
 state.rooms.Kitchen.heaters.35 : that is the heater with device ID 35 (in Domoticz) in the room called Kitchen.
 
+
+# Install
+
+You can install it with git or npm:
+
+    npm install domoticz-heater
+
+Then open and edit the example.js file to suit your needs. Do the same with configs-default.json and house_state.json.
+
+If you want to use it like me, use two different Google Calc documents. There is a very good tutorial on [how to set
+up access to Google Calc sheets from NodeJS](https://www.twilio.com/blog/2017/03/google-spreadsheets-and-javascriptnode-js.html) on Twilio.
+
+Copy:
+ 
+* [My Google Calc sheet that stores the consumption](https://docs.google.com/spreadsheets/d/1IRk5PMhBQxvdJwA27Q7cFHOjEASY599Po3DJCIdj20U/edit?usp=sharing).
+* [My Google Calc sheet that stores the temperatures I want per day, room, hour](https://docs.google.com/spreadsheets/d/1-yjwJvxZ3RaUbq6BNfdC55ggSc6SJKTnNKpMVJCjORQ/edit?usp=sharing)
 
 :star: Don't hesitate to star that repo if it was of any use for you  ;-)
 
