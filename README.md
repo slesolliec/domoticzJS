@@ -54,7 +54,7 @@ state.rooms.Kitchen.heaters.35 : that is the heater with device ID 35 (in Domoti
 
 You can install it with git or npm:
 
-    npm install domoticz-heater
+    npm install domoticz-heaters
 
 Then open and edit the example.js file to suit your needs. Do the same with configs-default.json and house_state.json.
 

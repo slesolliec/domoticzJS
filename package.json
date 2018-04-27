@@ -1,5 +1,5 @@
 {
-  "name": "domoticz-heat",
+  "name": "domoticz-heaters",
   "version": "1.0.0",
   "description": "Piloting Domoticz heaters with Node.js.",
   "main": "index.js",
