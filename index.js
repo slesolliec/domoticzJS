@@ -6,11 +6,12 @@
  */
 
 // dependencies
-const fs      = require("fs");
-const MyDate  = require('./class/date');
-const domoAPI = require('./class/domoticzAPI');
-const Room    = require('./class/room');
-const Heater  = require('./class/heater');
+const fs        = require("fs");
+const MyDate    = require('./class/date');
+const domoAPI   = require('./class/domoticzAPI');
+const Room      = require('./class/room');
+const Heater    = require('./class/heater');
+const gsheetAPI = require("./class/googleSheetAPI");
 
 const domoJS = {};
 domoJS.configs = {};
@@ -265,6 +266,18 @@ function processOneTemperatureData (thermometer) {
     // todo: a check on the last update to catch empty batteries
     // if (thermometer.LastUpdate( la date en CET ) > 1 heure et 5 minutes (pour être DST23 proof) = alerte !!
 }
+
+
+/**
+ * Wrappers around gsheetAPI just so that I don't need to call
+ * gsheetAPI (and have to require it) from the outside world.
+ */
+domoJS.getTempsFromGoogleSheet = function() {
+    gsheetAPI.getTempsFromGoogleSheet( domoJS.configs );
+};
+domoJS.uploadToGoogleSheet = function() {
+    gsheetAPI.uploadToGoogleSheet( domoJS.configs, domoJS.state );
+};
 
 
 
