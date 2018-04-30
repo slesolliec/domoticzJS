@@ -126,9 +126,9 @@ function processOneSwitchData ( oneSwitch ) {
     if (oneSwitch.Name.substr(0,4) === 'TC1B') {
         // console.log(oneSwitch);
         if (oneSwitch.Data === 'On') {
-            let lastUpdate = Date(oneSwitch.LastUpdate);
-            let lastUpdateInMinutes = Math.round( (Date() - lastUpdate) / 1000 / 60 );
-            // console.log("Remote Control Button " + mySwitch.Name + " clicked " + lastUpdateInMinutes + " minutes ago");
+            let lastUpdate = new Date(oneSwitch.LastUpdate);
+            let lastUpdateInMinutes = Math.round( ( new Date().getTime() - lastUpdate.getTime()) / 1000 / 60 );
+            // console.log("Remote Control Button " + oneSwitch.Name + " clicked " + lastUpdateInMinutes + " minutes ago");
             if (lastUpdateInMinutes > 120) {
                 // we send the command to switch off the remote control button to domoticz
                 domoAPI.switchDevice(oneSwitch.idx, 'Off');
