@@ -31,4 +31,5 @@ domoJS.updateSwitchesStatus();
 
 // update power consumption to Google Sheet once an hour
 if (new Date().getMinutes() === 58)
+	// todo: don't bother Google if nothing has change (like in summer)
     gsheetAPI.uploadToGoogleSheet( domoJS.configs, domoJS.state );
