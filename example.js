@@ -8,7 +8,6 @@
 
 // load main module
 const domoJS    = require("./index");
-const gsheetAPI = require("./class/googleSheetAPI");
 const path      = require('path');
 
 // load configs (put that file where it suits you)
@@ -16,7 +15,7 @@ domoJS.loadConfigs( path.join(__dirname, 'configs.json'));
 
 // get wanted temperatures from Google Sheet only once an hour
 if (new Date().getMinutes() === 0)
-    gsheetAPI.getTempsFromGoogleSheet( domoJS.configs );
+    domoJS.getTempsFromGoogleSheet();
 
 // load house state (put that file where you want)
 domoJS.loadState( path.join(__dirname, 'house_state.json'));
@@ -31,5 +30,5 @@ domoJS.updateSwitchesStatus();
 
 // update power consumption to Google Sheet once an hour
 if (new Date().getMinutes() === 58)
-	// todo: don't bother Google if nothing has change (like in summer)
-    gsheetAPI.uploadToGoogleSheet( domoJS.configs, domoJS.state );
+    // todo: don't bother Google if nothing has change (like in summer)
+    domoJS.uploadToGoogleSheet();

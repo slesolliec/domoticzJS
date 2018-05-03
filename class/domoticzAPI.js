@@ -69,8 +69,9 @@ function getUrl() {
 domoticzAPI.getSwitchesInfo = function( callback1, callbackfinal ) {
 
     let switchesData = '';
+    const urlEnd = '&type=devices&used=true&filter=light';
 
-    https.get( getUrl() + '&type=devices&used=true&filter=light', function(res) {
+    https.get( getUrl() + urlEnd, function(res) {
         res.setEncoding("utf8");
         res.on("data", function(data) { switchesData += data; });
         res.on("end",  function() {
@@ -79,6 +80,11 @@ domoticzAPI.getSwitchesInfo = function( callback1, callbackfinal ) {
 
             callbackfinal();
         });
+    }).on("error", function(err) {
+        console.log( "Error getting switches info from Domoticz at URL:");
+        console.log( "  " + getUrl() + urlEnd );
+        console.log( "  with: "  + err);
+        console.log( "  Please paste the URL in your web browser to check it is valid.");
     });
 
 };
