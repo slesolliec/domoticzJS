@@ -165,24 +165,7 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
                 }
 
                 // we send the request to update the Google Calc sheet
-                sheet.bulkUpdateCells(cells, function(err) {
-                    // block zeroing values if we got an error
-                    if (err != null) throw err;
-
-                    // now that values are saved, we can zero some of them
-                    if ( now.getHCHP() === 'HC') {
-                      for ( let roomName in state.rooms) {
-                          state.rooms[roomName].HP = 0;
-                      }
-                    } else {
-                      for ( let roomName in state.rooms) {
-                          state.rooms[roomName].HC = 0;
-                      }
-                    }
-
-                    // save state // should not be needed
-                    fs.writeFile( state.file, JSON.stringify(state), function(err){ if(err) throw err; } );
-                });
+                sheet.bulkUpdateCells(cells, zeroSomeValues);
 
             })
         });
@@ -190,6 +173,38 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
     });
 
 };
+
+
+/**
+ * Once we have saved the values in Google Sheet, we can zero some values
+ * @param err
+ */
+function  zeroSomeValues(err) {
+
+    say("  We zero some values");
+
+    // block zeroing values if we got an error
+    if (err != null) throw err;
+
+    say(state);
+
+    const now = new MyDate();
+
+    // now that values are saved, we can zero some of them
+    if ( now.getHCHP() === 'HC') {
+        for ( let roomName in state.rooms) {
+            state.rooms[roomName].HP = 0;
+        }
+    } else {
+        for ( let roomName in state.rooms) {
+            state.rooms[roomName].HC = 0;
+        }
+    }
+
+    // save state // should not be needed
+    // fs.writeFile( state.file, JSON.stringify(state), function(err){ if(err) throw err; } );
+}
+
 
 
 module.exports = googleSheetAPI;
