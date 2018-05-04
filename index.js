@@ -37,7 +37,7 @@ domoJS.loadConfigs = function( path ) {
     domoJS.configs = JSON.parse( fs.readFileSync( path ) );
 
     // I don't understand why domoAPI does not have access to configs
-    domoAPI.setAccess( domoJS.configs.domoticz, domoJS.configs.username, domoJS.configs.password );
+    domoAPI.setAccess( domoJS.configs.domoticz );
 };
 
 

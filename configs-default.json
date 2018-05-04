@@ -1,8 +1,6 @@
 {
   "root"    : "/path/to/script/with/trailing/slash/",
-  "domoticz":"http://your.domoticz.server:port",
-  "username":"yourUsername",
-  "password":"yourPassword",
+  "domoticz":"http://username:password@your.domoticz.server:port",
   "GoogleSheetID": "blahblah",
   "GoogleTempSheetID": "blihblih",
   "GoogleAPIclientSecret": "/path/to/your/Google/client-secret.json"
