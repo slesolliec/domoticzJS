@@ -141,7 +141,7 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
                 'min-row': myRow,
                 'max-row': myRow,
                 'min-col': 2,
-                'max-col': 16,
+                'max-col': 4 * Object.keys( state.rooms ).length,
                 'return-empty': true
             }, function(err, cells) {
 
