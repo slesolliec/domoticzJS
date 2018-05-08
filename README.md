@@ -68,3 +68,11 @@ Copy:
 
 :star: Don't hesitate to star that repo if it was of any use for you  ;-)
 
+# small notes
+
+Upgrading node on raspberry pi:
+
+    curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+    
+    
