@@ -165,7 +165,11 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
                 }
 
                 // we send the request to update the Google Calc sheet
-                sheet.bulkUpdateCells(cells, zeroSomeValues);
+                // in order to avoid callback hell, while still having access to state:
+                // chose following line to use closure
+                // sheet.bulkUpdateCells(cells, zeroSomeValuesWithClosure(err,state));
+                // or the following to use bind
+                sheet.bulkUpdateCells(cells, zeroSomeValuesWithBind.bind({},err,state));
 
             })
         });
@@ -177,16 +181,56 @@ googleSheetAPI.uploadToGoogleSheet = function( configs, state ) {
 
 /**
  * Once we have saved the values in Google Sheet, we can zero some values
- * @param err
+ * To avoid declaring that callback inside the above call, we return a closure
+ * so it can still have access to the state var
+ * @param err : error passed by bulkUpdateCells in case of failure
+ * @param {*} state : state of the application
  */
-function  zeroSomeValues(err) {
+function  zeroSomeValuesWithClosure(err, state) {
 
-    say("  We zero some values");
+    return function() {
+
+        // block zeroing values if we got an error
+        if (err != null) {
+            say("Error saving consumption values to Google Calc because:");
+            console.log(err);
+            return;
+        }
+
+        const now = new MyDate();
+
+        // now that values are saved, we can zero some of them
+        if ( now.getHCHP() === 'HC') {
+            for ( let roomName in state.rooms) {
+                state.rooms[roomName].HP = 0;
+            }
+        } else {
+            for ( let roomName in state.rooms) {
+                state.rooms[roomName].HC = 0;
+            }
+        }
+
+        // save state // should not be needed
+        // fs.writeFile( state.file, JSON.stringify(state), function(err){ if(err) throw err; } );
+
+    }
+
+}
+
+/**
+ * This is just the same function as above, but without the return closure stuff.
+ * It will be called with bind() so we can still have access to state var
+ * @param err : error passed by bulkUpdateCells in case of failure
+ * @param {*} state : state of the application
+ */
+function  zeroSomeValuesWithBind(err, state) {
 
     // block zeroing values if we got an error
-    if (err != null) throw err;
-
-    say(state);
+    if (err != null) {
+        say("Error saving consumption values to Google Calc because:");
+        console.log(err);
+        return;
+    }
 
     const now = new MyDate();
 
@@ -204,7 +248,6 @@ function  zeroSomeValues(err) {
     // save state // should not be needed
     // fs.writeFile( state.file, JSON.stringify(state), function(err){ if(err) throw err; } );
 }
-
 
 
 module.exports = googleSheetAPI;
