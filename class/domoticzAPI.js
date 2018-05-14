@@ -10,7 +10,7 @@
 
  */
 
-const url = require('url');
+const url = require("url");
 
 // const https  = require("https");
 let http;
@@ -39,18 +39,18 @@ function say( msg ) {
 domoticzAPI.setAccess = function ( domoURL ) {
 
     httpOptions = url.parse( domoURL );
-    httpOptions.pathname = 'json.htm';
+    httpOptions.pathname = "json.htm";
 
-    [username, password] = httpOptions.auth.split(':',2);
+    [username, password] = httpOptions.auth.split(":",2);
     httpOptions.auth = null;
 
-    if (httpOptions.protocol === 'https:') {
+    if (httpOptions.protocol === "https:") {
         // we are using https
-        http = require('https');
+        http = require("https");
         httpOptions.rejectUnauthorized = false;
     } else {
         // we are using http
-        http = require('http');
+        http = require("http");
     }
 
 };
@@ -64,17 +64,17 @@ domoticzAPI.setAccess = function ( domoURL ) {
 function getHttpOptions(query) {
 
     // compose part after the ?
-    httpOptions.search = "username=" + new Buffer( username ).toString('base64')
-        + "&password=" + new Buffer( password ).toString('base64')
+    httpOptions.search = "username=" + new Buffer( username ).toString("base64")
+        + "&password=" + new Buffer( password ).toString("base64")
         + "&" + query;
 
     // complete url (for debug)
-    httpOptions.href = httpOptions.protocol + '//' + httpOptions.hostname;
-    if (httpOptions.port) httpOptions.href += ':' + httpOptions.port;
-    httpOptions.href += '/' + httpOptions.pathname + '?' + httpOptions.search;
+    httpOptions.href = httpOptions.protocol + "//" + httpOptions.hostname;
+    if (httpOptions.port) httpOptions.href += ":" + httpOptions.port;
+    httpOptions.href += "/" + httpOptions.pathname + "?" + httpOptions.search;
 
     // path (for http.get() )
-    httpOptions.path = '/' + httpOptions.pathname + '?' + httpOptions.search;
+    httpOptions.path = "/" + httpOptions.pathname + "?" + httpOptions.search;
 
     return httpOptions;
 }
@@ -87,8 +87,8 @@ function getHttpOptions(query) {
  */
 domoticzAPI.getSwitchesInfo = function( callback1, callbackfinal ) {
 
-    let switchesData = '';
-    const httpOpts = getHttpOptions('type=devices&used=true&filter=light');
+    let switchesData = "";
+    const httpOpts = getHttpOptions("type=devices&used=true&filter=light");
 
     http.get( httpOpts, function(res) {
         res.setEncoding("utf8");
@@ -115,17 +115,17 @@ domoticzAPI.getSwitchesInfo = function( callback1, callbackfinal ) {
  */
 domoticzAPI.getTemperatures = function( callback ) {
 
-    let tempData = '';
+    let tempData = "";
 
-    http.get( getHttpOptions('type=devices&used=true&filter=temp'), function(res) {
+    http.get( getHttpOptions("type=devices&used=true&filter=temp"), function(res) {
         res.setEncoding("utf8");
         res.on("data", function(data) { tempData += data; });
         res.on("end",  function() {
             // console.log(body);
             tempData = JSON.parse(tempData);
-            tempData.result.forEach( callback )
+            tempData.result.forEach( callback );
         });
-  });
+    });
 
 };
 
@@ -137,7 +137,7 @@ domoticzAPI.getTemperatures = function( callback ) {
  */
 domoticzAPI.switchDevice = function( deviceIdx, command ) {
     // say( "Switch device " + deviceIdx + " " + command);
-    http.get( getHttpOptions('type=command&param=switchlight&idx=' + deviceIdx + '&switchcmd=' + command));
+    http.get( getHttpOptions("type=command&param=switchlight&idx=" + deviceIdx + "&switchcmd=" + command));
 };
 
 

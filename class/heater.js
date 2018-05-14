@@ -7,15 +7,15 @@
  */
 
 
-const domoAPI = require('./domoticzAPI');
+const domoAPI = require("./domoticzAPI");
 
 function say( msg ) {
-    console.log ( '     ' + msg);
+    console.log ( "     " + msg);
 }
 
 
 const Heater = {
-    name       : '',    // name of heater
+    name       : "",    // name of heater
     devIdx     : null,  // device index in Domoticz database
     isInverted : false, // true if chacom module is connected to pilot thread
     power      : 1000   // default heater power is 1000 Watts
@@ -29,7 +29,7 @@ const Heater = {
 
 // private method
 function dumpfield( item, index) {
-    console.log( index + ' = ' + item);
+    console.log( index + " = " + item);
 }
 
 
@@ -48,9 +48,9 @@ Heater.switchOn  = function() {
 
     // this sends the request
     if (this.isInverted) {
-        domoAPI.switchDevice( this.devIdx, 'Off')
+        domoAPI.switchDevice( this.devIdx, "Off");
     } else {
-        domoAPI.switchDevice( this.devIdx, 'On')
+        domoAPI.switchDevice( this.devIdx, "On");
     }
 
 };
@@ -63,9 +63,9 @@ Heater.switchOff = function() {
 
     // this sends the request
     if (this.isInverted) {
-        domoAPI.switchDevice( this.devIdx, 'On')
+        domoAPI.switchDevice( this.devIdx, "On");
     } else {
-        domoAPI.switchDevice( this.devIdx, 'Off')
+        domoAPI.switchDevice( this.devIdx, "Off");
     }
 
 };

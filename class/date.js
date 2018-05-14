@@ -24,29 +24,29 @@
 function MyDate(a, b, c, d, e, f, g) {
     let x;
     switch (arguments.length) {
-        case 0:
-            x = new Date();
-            break;
-        case 1:
-            x = new Date(a);
-            break;
-        case 2:
-            x = new Date(a, b);
-            break;
-        case 3:
-            x = new Date(a, b, c);
-            break;
-        case 4:
-            x = new Date(a, b, c, d);
-            break;
-        case 5:
-            x = new Date(a, b, c, d, e);
-            break;
-        case 6:
-            x = new Date(a, b, c, d, e, f);
-            break;
-        default:
-            x = new Date(a, b, c, d, e, f, g);
+    case 0:
+        x = new Date();
+        break;
+    case 1:
+        x = new Date(a);
+        break;
+    case 2:
+        x = new Date(a, b);
+        break;
+    case 3:
+        x = new Date(a, b, c);
+        break;
+    case 4:
+        x = new Date(a, b, c, d);
+        break;
+    case 5:
+        x = new Date(a, b, c, d, e);
+        break;
+    case 6:
+        x = new Date(a, b, c, d, e, f);
+        break;
+    default:
+        x = new Date(a, b, c, d, e, f, g);
     }
     // making x an "instance of" MyDate.prototype
     x.__proto__ = MyDate.prototype;
@@ -66,15 +66,15 @@ MyDate.prototype.__proto__ = Date.prototype;
  * @returns {string} Date as YYYYMMDD
  */
 MyDate.prototype.stringDate8 = function() {
-    let tmp = '';
+    let tmp = "";
     tmp += this.getFullYear();
     if (this.getMonth() < 10) {
-        tmp += '0' + this.getMonth();
+        tmp += "0" + this.getMonth();
     } else {
         tmp += this.getMonth();
     }
     if (this.getDate() < 10) {
-        tmp += '0' + this.getDate();
+        tmp += "0" + this.getDate();
     } else {
         tmp += this.getDate();
     }
@@ -87,15 +87,15 @@ MyDate.prototype.stringDate8 = function() {
  * @returns {string} Time as HH:MM
  */
 MyDate.prototype.stringTime5 = function() {
-    let tmp = '';
+    let tmp = "";
     if (this.getHours() < 10) {
-        tmp += '0' + this.getHours() + ':';
+        tmp += "0" + this.getHours() + ":";
     } else {
-        tmp += this.getHours() + ':';
+        tmp += this.getHours() + ":";
     }
 
     if (this.getMinutes() < 10) {
-        tmp += '0' + this.getMinutes();
+        tmp += "0" + this.getMinutes();
     } else {
         tmp += this.getMinutes();
     }
@@ -135,12 +135,12 @@ MyDate.prototype.getDayOfYear = function() {
  * @returns {string}  'HC' between 22:30 and 06:30 and 'HP' otherwise
  */
 MyDate.prototype.getHCHP = function () {
-    if ( this.getHours() < 6 )  return 'HC';
-    if ( (this.getHours() === 6  )  && (this.getMinutes() < 30) ) return 'HC';
-    if ( (this.getHours() === 22 )  && (this.getMinutes() > 29) ) return 'HC';
-    if ( this.getHours() > 22 ) return 'HC';
+    if ( this.getHours() < 6 )  return "HC";
+    if ( (this.getHours() === 6  )  && (this.getMinutes() < 30) ) return "HC";
+    if ( (this.getHours() === 22 )  && (this.getMinutes() > 29) ) return "HC";
+    if ( this.getHours() > 22 ) return "HC";
 
-    return 'HP';
+    return "HP";
 };
 
 
