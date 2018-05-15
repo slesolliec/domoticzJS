@@ -4,7 +4,7 @@
 // Because it is only active a few seconds per minutes,
 // I guess running it as a cron job saves ram use.
 // If you're on Linux, add this to your crontab:
-// * * * * *  /path/to/node ~/domo/example.js >> ~/domo/logs/domo_`date +\%Y-\%m-\%d`.log
+/// * * * * *  /path/to/node ~/domo/example.js >> ~/domo/logs/domo_`date +\%Y-\%m-\%d`.log
 
 // load main module
 const domoJS    = require("./index");
@@ -30,5 +30,4 @@ domoJS.updateSwitchesStatus();
 
 // update power consumption to Google Sheet once an hour
 if (new Date().getMinutes() === 58)
-    // todo: don't bother Google if nothing has change (like in summer)
     domoJS.uploadToGoogleSheet();
