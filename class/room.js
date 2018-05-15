@@ -19,7 +19,7 @@ const Room = {
     HP:           0,
     nbHitsOn:     0,
     nbHitsOff:    0,
-    lastUpdate:   new Date().toISOString()
+    lastSwitchTime: new Date().toISOString()
 };
 
 // this should not be here ....
@@ -81,7 +81,7 @@ Room.switchOn  = function() {
         this.nbHitsOn   = 1;
         this.nbHitsOff  = 0;
         this.state      = "On";
-        this.lastUpdate = now.toISOString();
+        this.lastSwitchTime = now.toISOString();
         this.switchHeatersOn();
         return;
     }
@@ -97,13 +97,13 @@ Room.switchOn  = function() {
     //    return;
 
     // check it's been at least 15 minutes
-    if ( (now.getTime() - new Date( this.lastUpdate ).getTime()) / 1000 < 900 )
+    if ( (now.getTime() - new Date( this.lastSwitchTime ).getTime()) / 1000 < 900 )
         return;
 
     // resend switch order
     say( "Switching ON " + this.name + " (resent)" );
     this.nbHitsOn++;
-    this.lastUpdate = now.toISOString();
+    this.lastSwitchTime = now.toISOString();
     this.switchHeatersOn();
 };
 
@@ -128,7 +128,7 @@ Room.switchOff = function() {
         this.nbHitsOn   = 0;
         this.nbHitsOff  = 1;
         this.state      = "Off";
-        this.lastUpdate = now.toISOString();
+        this.lastSwitchTime = now.toISOString();
         this.switchHeatersOff();
         return;
     }
@@ -144,13 +144,13 @@ Room.switchOff = function() {
     //    return;
 
     // check it's been at least 15 minutes
-    if ( (now.getTime() - new Date( this.lastUpdate ).getTime()) / 1000 < 900 )
+    if ( (now.getTime() - new Date( this.lastSwitchTime ).getTime()) / 1000 < 900 )
         return;
 
     // resend switch order
     say( "Switching OFF " + this.name + " (resent)" );
     this.nbHitsOff++;
-    this.lastUpdate = now.toISOString();
+    this.lastSwitchTime = now.toISOString();
     this.switchHeatersOff();
 };
 
