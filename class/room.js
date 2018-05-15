@@ -19,7 +19,8 @@ const Room = {
     HP:           0,
     nbHitsOn:     0,
     nbHitsOff:    0,
-    lastSwitchTime: new Date().toISOString()
+    lastSwitchTime: new Date().toISOString(),
+    lastSensorTime: null
 };
 
 // this should not be here ....
@@ -37,6 +38,12 @@ Room.setTemperature = function( temperature ) {
     // say(" Setting temperature "+ temperature + " to room " + this.name);
     this.temp = temperature;
     this.checkHeat();
+};
+
+
+Room.setLastSensorTime = function( time ) {
+    this.lastSensorTime = time;
+    // we could check here that last sensor time is not too far away in time => no more batteries
 };
 
 

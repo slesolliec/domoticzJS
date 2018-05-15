@@ -253,18 +253,16 @@ function writeState() {
 /**
  * Decide who to switch on or off
  */
-function processOneTemperatureData (thermometer) {
+function processOneTemperatureData (sensor) {
 
     // console.log(thermometer.Name);
 
     // we get the room from the name of the device: tempBed -> Bed
-    let room_name = thermometer.Name.substring(4);
+    let room_name = sensor.Name.substring(4);
 
     // update state
-    domoJS.state.rooms[room_name].setTemperature(thermometer.Temp);
-
-    // todo: a check on the last update to catch empty batteries
-    // if (thermometer.LastUpdate( la date en CET ) > 1 heure et 5 minutes (pour être DST23 proof) = alerte !!
+    domoJS.state.rooms[room_name].setTemperature(sensor.Temp);
+    domoJS.state.rooms[room_name].setLastSensorTime(sensor.LastUpdate);
 }
 
 
