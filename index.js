@@ -140,7 +140,8 @@ function processOneSwitchData ( oneSwitch ) {
             }
         }
 
-        // this part will go when web interface is implemented
+		// this part will go when web interface is implemented
+		/*
         if (oneSwitch.Data === "On") {
             switch (oneSwitch.Name) {
                 case "TC1B1":  domoJS.state.rooms["Kitchen"].tempModifier = 1;  break;
@@ -153,7 +154,8 @@ function processOneSwitchData ( oneSwitch ) {
                 case "TC1B2":  domoJS.state.rooms["Living"].tempModifier  = 0;  break;
                 case "TC1B3":  domoJS.state.rooms["Bed"].tempModifier     = 0;  break;
             }
-        }
+		}
+		*/
 
         return;
     }
