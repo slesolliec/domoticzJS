@@ -24,7 +24,7 @@
   "homepage": "https://github.com/slesolliec/domoticzJS#readme",
   "dependencies": {
     "google-auth-library": "^1.4.0",
-    "google-spreadsheet": "^2.0.4",
+    "google-spreadsheet": "^2.0.6",
     "googleapis": "^23.0.2"
   }
 }
