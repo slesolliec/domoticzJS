@@ -274,6 +274,9 @@ function processOneTemperatureData (sensor) {
  */
 domoJS.getTempsFromGoogleSheet = function() {
     gsheetAPI.getTempsFromGoogleSheet( domoJS.configs );
+    // this one should be call as a callback from the previous but I'm too lazy
+    // this will just make a 1 minute delay usually just at 00:00 every day
+    domoJS.loadWantedTemps(domoJS.configs.root + "wantedTemps.json");
 };
 domoJS.uploadToGoogleSheet = function() {
     gsheetAPI.uploadToGoogleSheet( domoJS.configs, domoJS.state );

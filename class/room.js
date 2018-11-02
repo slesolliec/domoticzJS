@@ -13,6 +13,7 @@ const Room = {
     temp:        10,
     wantedTemp:  10,
     tempModifier: 0,
+    tempModifierUntil: undefined,
     heaters:     {},
     state:    "Off",
     HC:           0,
@@ -51,6 +52,12 @@ Room.setLastSensorTime = function( time ) {
  * Checks if heaters should be turned on or off
  */
 Room.checkHeat = function() {
+
+    // zero modifier if we are later than tempModifierUntil
+    if (this.tempModifierUntil && (new Date(this.tempModifierUntil) < new Date())) {
+        this.tempModifier = 0;
+        this.tempModifierUntil = undefined;
+    }
 
     const realWantedTemp = this.wantedTemp + this.tempModifier;
 
