@@ -11,19 +11,18 @@ const domoJS    = require("./index");
 const path      = require("path");
 
 // load configs (put that file where it suits you)
-domoJS.loadConfigs( path.join(__dirname, "configs.json"));
+domoJS.loadConfigs(path.join(__dirname, "configs.json"));
 
 // get wanted temperatures from Google Sheet only once an hour
+// (but the first time you run that script, comment off the if)
 if (new Date().getMinutes() === 0)
     domoJS.getTempsFromGoogleSheet();
 
 // load house state (put that file where you want)
-domoJS.loadState( path.join(__dirname, "house_state.json"));
+domoJS.loadState(path.join(__dirname, "house_state.json"));
 
 // load wanted temperatures from local Google Sheet "cache" file
-domoJS.loadWantedTemps( path.join(__dirname, "wantedTemps.json"));
-
-// we get the state of the switches of the heaters from Domoticz
+// then get the state of the switches of the heaters from Domoticz
 // then it fetches current temperatures
 // then it sends ON / OFF commands
 domoJS.updateSwitchesStatus();

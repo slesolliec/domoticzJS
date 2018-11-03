@@ -78,13 +78,13 @@ function forEachHeater( func ) {
 
 /**
  * Reads the temperatures in Google Calc "proxy" file, and writes them in state.rooms.xxx.wantedTemps
- * @param path of the json file that has the temperatures per hours (from Google Calc)
+ * @param callback : what to do next
  */
-domoJS.loadWantedTemps = function( path ) {
-    if ( ! fs.existsSync( path ))
+function loadWantedTemps(callback) {
+    if (! fs.existsSync(domoJS.configs.root + "wantedTemps.json"))
         return;
 
-    let wantedTemps = JSON.parse( fs.readFileSync( path ));
+    let wantedTemps = JSON.parse(fs.readFileSync(domoJS.configs.root + "wantedTemps.json"));
     let now5 = now.stringTime5();
 
     // from the sheet of wanted temps, we get which temperature we now want
@@ -101,18 +101,26 @@ domoJS.loadWantedTemps = function( path ) {
         // console.log(domoJS.state.rooms[room]);
     }
     // say(" Wanted Temperatures:"); console.log(wantedTemps);
-};
+	
+    if (typeof callback === "function") {
+        callback();
+    }
+}
 
 
 /**
- * Get the heater switches status
+ *  Get the wanted temperature
+ *  Get the heater switches status
  *  send Domoticz API call
  *  get result as list of switch data
  *  process each switch (heater) in a callback
  *  then count consumption
  */
 domoJS.updateSwitchesStatus = function() {
-    domoAPI.getSwitchesInfo( processOneSwitchData, countConsumption );
+    loadWantedTemps(function() {
+        domoAPI.getSwitchesInfo( processOneSwitchData, countConsumption );
+    });
+
     // console.log(state.rooms);
 };
 
@@ -140,8 +148,8 @@ function processOneSwitchData ( oneSwitch ) {
             }
         }
 
-		// this part will go when web interface is implemented
-		/*
+        // this part will go when web interface is implemented
+        /*
         if (oneSwitch.Data === "On") {
             switch (oneSwitch.Name) {
                 case "TC1B1":  domoJS.state.rooms["Kitchen"].tempModifier = 1;  break;
@@ -247,7 +255,7 @@ function countConsumption() {
  * Write down state in json file
  */
 function writeState() {
-  fs.writeFile( domoJS.state.file, JSON.stringify(domoJS.state), function(err){ if(err) throw err; } );
+    fs.writeFile( domoJS.state.file, JSON.stringify(domoJS.state, null, 4), function(err){ if(err) throw err; } );
 }
 
 
@@ -256,7 +264,6 @@ function writeState() {
  * Decide who to switch on or off
  */
 function processOneTemperatureData (sensor) {
-
     // console.log(thermometer.Name);
 
     // we get the room from the name of the device: tempBed -> Bed
@@ -273,13 +280,10 @@ function processOneTemperatureData (sensor) {
  * gsheetAPI (and have to require it) from the outside world.
  */
 domoJS.getTempsFromGoogleSheet = function() {
-    gsheetAPI.getTempsFromGoogleSheet( domoJS.configs );
-    // this one should be call as a callback from the previous but I'm too lazy
-    // this will just make a 1 minute delay usually just at 00:00 every day
-    domoJS.loadWantedTemps(domoJS.configs.root + "wantedTemps.json");
+    gsheetAPI.getTempsFromGoogleSheet(domoJS.configs);
 };
 domoJS.uploadToGoogleSheet = function() {
-    gsheetAPI.uploadToGoogleSheet( domoJS.configs, domoJS.state );
+    gsheetAPI.uploadToGoogleSheet(domoJS.configs, domoJS.state);
 };
 
 
