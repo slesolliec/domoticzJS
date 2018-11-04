@@ -17,15 +17,13 @@ const domoJS = {};
 domoJS.configs = {};
 domoJS.state   = {};
 
-const now = new MyDate();
-
 
 /**
  * Some stupid console.log wrapper with prepended time
  * @param msg
  */
 function say( msg ) {
-    console.log( now.stringTime5() + " " + msg);
+    console.log(new MyDate().stringTime5() + " " + msg);
 }
 
 
@@ -81,11 +79,13 @@ function forEachHeater( func ) {
  * @param callback : what to do next
  */
 function loadWantedTemps(callback) {
-    if (! fs.existsSync(domoJS.configs.root + "wantedTemps.json"))
-        return;
+    if (! fs.existsSync(domoJS.configs.root + "wantedTemps.json")) {
+        console.log("could not load " + domoJS.configs.root + "wantedTemps.json from local disk");
+        return
+    }
 
     let wantedTemps = JSON.parse(fs.readFileSync(domoJS.configs.root + "wantedTemps.json"));
-    let now5 = now.stringTime5();
+    let now5 = new MyDate().stringTime5();
 
     // from the sheet of wanted temps, we get which temperature we now want
     for (let room in wantedTemps) {
@@ -224,6 +224,8 @@ function processOneSwitchData ( oneSwitch ) {
  * Scatter those minutes between High price hours and low price hours.
  */
 function countConsumption() {
+
+    const now = new MyDate();
 
     // console.log(state);
     const lastStateUpdate = new MyDate(domoJS.state.lastUpdate);
