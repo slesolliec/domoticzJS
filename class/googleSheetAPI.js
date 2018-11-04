@@ -104,7 +104,7 @@ googleSheetAPI.getTempsFromGoogleSheet = function( configs ) {
 
                 // save wanted temperatures cache file
                 // so that we don't need to bother Google Sheets every minute
-                fs.writeFile( wantedTempsFile, JSON.stringify(temps), function(err){ if(err) throw err; } );
+                fs.writeFile( wantedTempsFile, JSON.stringify(temps, null, 4), function(err){ if(err) throw err; } );
             });
         });
     });
