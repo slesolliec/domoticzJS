@@ -62,7 +62,7 @@ googleSheetAPI.getTempsFromGoogleSheet = function( configs ) {
 
             sheet.getCells({
                 "min-row":  1,
-                "max-row": 10,
+                "max-row": 20,
                 "min-col":  1,
                 "max-col": 10,
                 "return-empty":true
