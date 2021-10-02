@@ -40,9 +40,19 @@ googleSheetAPI.getTempsFromGoogleSheet = function( configs ) {
     // Authenticate with the Google Spreadsheets API.
     doc.useServiceAccountAuth(creds, function (err) {
 
+		if (err) {
+			say("Error authenticating to Google: " + err);
+			process.exit(1);
+		}
+
         // Get infos and worksheets
         doc.getInfo( function(err, info) {
-            say("Loaded doc     : " + info.title);  // +' by '+info.author.email);
+			if (err) {
+				say("Error getting Google sheet: " + err);
+				process.exit(1);
+			}
+			
+			say("Loaded doc     : " + info.title);  // +' by '+info.author.email);
             say("Last updated at: " + info.updated);
 
             // check if local file is up to date
