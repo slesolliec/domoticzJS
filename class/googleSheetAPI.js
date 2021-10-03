@@ -7,7 +7,7 @@ const googleSheetAPI = {};
 
 const MyDate            = require("./date");
 const fs                = require("fs");
-const GoogleSpreadsheet = require("google-spreadsheet");
+const {GoogleSpreadsheet} = require("google-spreadsheet");
 
 
 /**

@@ -1,5 +1,5 @@
 
-# Manging the temperature in your house with Domoticz, Google Docs and Node JS
+# Managing the temperature in your house with Domoticz, Google Docs and Node JS
 
 This package is to be used with:
 

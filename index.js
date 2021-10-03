@@ -272,6 +272,10 @@ function processOneTemperatureData (sensor) {
     let room_name = sensor.Name.substring(4);
 
     // update state
+    if (! domoJS.state.rooms[room_name]) {
+        say("Room " + room_name + " does not exist in domoJS.state");
+        return;
+    }
     domoJS.state.rooms[room_name].setTemperature(sensor.Temp);
     domoJS.state.rooms[room_name].setLastSensorTime(sensor.LastUpdate);
 }
