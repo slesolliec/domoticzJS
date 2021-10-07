@@ -64,8 +64,8 @@ domoticzAPI.setAccess = function ( domoURL ) {
 function getHttpOptions(query) {
 
     // compose part after the ?
-    httpOptions.search = "username=" + new Buffer( username ).toString("base64")
-        + "&password=" + new Buffer( password ).toString("base64")
+    httpOptions.search = "username=" + Buffer.from(username).toString("base64")
+        + "&password=" + Buffer.from(password).toString("base64")
         + "&" + query;
 
     // complete url (for debug)
