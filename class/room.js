@@ -86,7 +86,8 @@ Room.checkHeat = function() {
 		let lastSensorTime = new Date(this.lastSensorTime);
 		lastSensorTime.setHours( lastSensorTime.getHours() + 1 );
 		if (new Date() > lastSensorTime) {
-			say(this.name + " has not received temperature data for more than one hour:");
+			// say(lastSensorTime);
+			say(this.name + " has not received temperature data for more than one hour: since " + lastSensorTime.toISOString() );
 			// switch heaters off
 			this.switchOff();
 			return;

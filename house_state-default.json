@@ -1,70 +1,115 @@
-/**
-
-    Exemple of house_state.json file.
-
-    List your rooms, and the heaters in your rooms.
-
-    Heaters' names are not important as they will be overwritten by what is defined in Domoticz.
-    devIdx is the device index in Domoticz. It also serves as the key of the heaters list.
-
-*/
 {
-    "lastUpdate": "2018-04-23T17:07:01.705Z",
+    "lastUpdate": "2021-10-09T12:52:04.580Z",
     "rooms": {
-        "Bed": {
-            "name": "Bedroom",
-            "heaters": {
-                "3": {
-                    "name": "HeaterBed",
-                    "devIdx": 3,
-                    "isInverted": true,
-                    "power": 1500
-                }
-            }
+        "Kitchen": {
+            "name": "Kitchen",
+            "idx": 2,
+            "wantedTemp": 19,
+            "tempModifier": 0,
+            "HC": 0,
+            "temp": 18.9,
+            "HP": 78,
+            "nbHitsOn": 2,
+            "nbHitsOff": 0,
+            "state": "On",
+            "lastSensorTime": "2021-10-09 13:36:33",
+            "lastSwitchTime": "2021-10-09T12:38:04.902Z"
         },
         "Living": {
             "name": "Living",
-            "wantedTemp": 18,
-            "heaters": {
-                "12": {
-                    "name": "HeaterLivingChimney",
-                    "devIdx": 12,
-                    "isInverted": true,
-                    "power": 1500
-                },
-                "13": {
-                    "name": "HeaterLiving",
-                    "devIdx": 13,
-                    "isInverted": true,
-                    "power": 1500
-                },
-                "37": {
-                    "name": "HeaterLivingCorridor",
-                    "devIdx": 37
-                }
-            }
+            "idx": 3,
+            "wantedTemp": 17,
+            "tempModifier": 0,
+            "HC": 0,
+            "temp": 19.8,
+            "HP": 81,
+            "nbHitsOn": 0,
+            "nbHitsOff": 3,
+            "state": "Off",
+            "lastSensorTime": "2021-10-09 14:50:46",
+            "lastSwitchTime": "2021-10-09T08:22:55.923Z"
         },
-        "Kitchen": {
-            "name": "Kitchen",
-            "heaters": {
-                "30": {
-                    "devIdx": 30,
-                    "name": "HeaterKitchen"
-                },
-                "36": {
-                    "devIdx": 36,
-                    "name": "HeaterKitchenSmall"
-                }
-            }
+        "Bed": {
+            "name": "Chambre",
+            "idx": 4,
+            "wantedTemp": 17,
+            "tempModifier": 0,
+            "HC": 0,
+            "temp": 18.1,
+            "nbHitsOn": 0,
+            "nbHitsOff": 3,
+            "state": "Off",
+            "HP": 0,
+            "lastSensorTime": "2021-10-09 14:51:54",
+            "lastSwitchTime": "2021-10-06T14:59:54.777Z"
         },
         "Bath": {
-            "name": "Bathroom",
-            "heaters": {
-                "39": {
-                    "name": "HeaterBath",
-                    "devIdx": 39
-                }
-            }
+            "name": "SdBain",
+            "idx": 5,
+            "wantedTemp": 18,
+            "tempModifier": 0,
+            "HC": 59,
+            "HP": 39,
+            "temp": 18.6,
+            "nbHitsOn": 0,
+            "nbHitsOff": 3,
+            "state": "Off",
+            "lastSensorTime": "2021-10-09 14:45:51",
+            "lastSwitchTime": "2021-10-09T05:39:55.885Z"
+        },
+        "Bath2": {
+            "name": "SdBain Haut",
+            "idx": 6,
+            "tempModifier": 0,
+            "HC": 0,
+            "HP": 30,
+            "temp": 17.2,
+            "nbHitsOn": 2,
+            "nbHitsOff": 0,
+            "state": "On",
+            "lastSensorTime": "2021-10-09 11:06:24",
+            "lastSwitchTime": "2021-10-09T12:38:04.900Z",
+            "wantedTemp": 18
+        },
+        "Pallier": {
+            "name": "Pallier",
+            "wantedTemp": 19,
+            "temp": 20.8,
+            "lastSensorTime": "2021-10-09 14:49:40",
+            "nbHitsOff": 3,
+            "lastSwitchTime": "2021-10-09T06:24:55.896Z",
+            "HC": 0,
+            "tempModifier": 0,
+            "nbHitsOn": 0,
+            "state": "Off",
+            "HP": 29
+        },
+        "Lili": {
+            "name": "Lili",
+            "wantedTemp": 19,
+            "temp": 19.3,
+            "lastSensorTime": "2021-10-09 14:51:52",
+            "nbHitsOff": 3,
+            "lastSwitchTime": "2021-10-09T10:56:55.971Z",
+            "HC": 59,
+            "tempModifier": 0,
+            "nbHitsOn": 0,
+            "state": "Off",
+            "HP": 355
+        },
+        "Bureau": {
+            "name": "Bureau",
+            "wantedTemp": 5,
+            "temp": 22.3,
+            "lastSensorTime": "2021-10-09 14:46:47",
+            "nbHitsOff": 3,
+            "lastSwitchTime": "2021-10-09T12:38:04.905Z",
+            "HC": 428,
+            "tempModifier": 0,
+            "nbHitsOn": 0,
+            "state": "Off",
+            "HP": 416
         }
-    }
+    },
+    "consoFingerprint": "0:48;0:81;0:0;59:39;0:0;0:29;59:355;428:374;"
 }

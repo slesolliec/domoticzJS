@@ -1,6 +1,6 @@
 {
   "name": "domoticz-heaters",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "Piloting Domoticz heaters with Node.js.",
   "main": "index.js",
   "scripts": {
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/slesolliec/domoticzJS#readme",
   "dependencies": {
+    "axios": "^0.22.0",
     "google-auth-library": "^7.10.0",
     "google-spreadsheet": "^3.1.15",
     "googleapis": "^88.2.0"

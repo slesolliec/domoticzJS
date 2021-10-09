@@ -33,8 +33,8 @@ function say( msg ) {
 domoJS.loadConfigs = function( path ) {
     domoJS.configs = JSON.parse( fs.readFileSync( path ) );
 
-    // I don't understand why domoAPI does not have access to configs
-    domoAPI.setAccess( domoJS.configs.domoticz );
+    // give domoticz API access to configs
+    domoAPI.setConfigs( domoJS.configs );
 };
 
 
@@ -58,9 +58,8 @@ domoJS.loadState = function( path ) {
 
 /**
  * Reads the temperatures in Google Calc "proxy" file, and writes them in state.rooms.xxx.wantedTemps
- * @param callback : what to do next
  */
-function loadWantedTemps(callback) {
+domoJS.updateWantedTemps = async function() {
     if (! fs.existsSync(domoJS.configs.root + "wantedTemps.json")) {
         console.log("could not load " + domoJS.configs.root + "wantedTemps.json from local disk");
         return
@@ -83,12 +82,33 @@ function loadWantedTemps(callback) {
         // console.log(domoJS.state.rooms[room]);
     }
     // say(" Wanted Temperatures:"); console.log(wantedTemps);
-	
-    if (typeof callback === "function") {
-        callback();
-    }
 }
 
+
+
+domoJS.loadTemperaturesFromDomoticz = async function() {
+
+	const temps = await domoAPI.getTemperatures();
+	// console.log(temps);
+
+	for (const sensor of temps) {
+		// console.log(sensor);
+
+		// we get the room from the name of the device: tempBed -> Bed
+		let room_name = sensor.Name.substring(4);
+
+		// update state
+		if (! domoJS.state.rooms[room_name]) {
+			// say("Room " + room_name + " does not exist in domoJS.state");
+			continue;
+		}
+		domoJS.state.rooms[room_name].setTemperature(sensor.Temp);
+		domoJS.state.rooms[room_name].setHumidity(sensor.Humidity);
+		domoJS.state.rooms[room_name].setLastSensorTime(sensor.LastUpdate);
+	}
+
+	// console.log(this.state);
+}
 
 /**
  *  Get the wanted temperature
@@ -98,166 +118,135 @@ function loadWantedTemps(callback) {
  *  process each switch (heater) in a callback
  *  then count consumption
  */
-domoJS.updateSwitchesStatus = function() {
-    loadWantedTemps(function() {
+domoJS.updateSwitches = async function() {
 
-		// reset all power of rooms to zero
-		for (const name in domoJS.state.rooms) {
-			let room = domoJS.state.rooms[name];
-			room.power = 0;
+	// reset all power of rooms to zero
+	for (const name in domoJS.state.rooms) {
+		let room = domoJS.state.rooms[name];
+		room.power = 0;
+	}
+	// console.log(domoJS.state);
+
+	// console.log(domoJS.state);
+
+	let switches = await domoAPI.getSwitchesInfo();
+
+	for (const oneSwitch of switches) {
+		let namebits = oneSwitch.Name.split('-');
+		// oneSwitch.idx
+		// Heater-Kitchen-Small-dir-36-1000
+		
+		// deal with the heaters
+		if (namebits[0] == 'Heater') {
+			let current_room = domoJS.state.rooms[namebits[1]];
+	
+			// now we check if heater and room state are coherent:
+			// room should impose the value of heater. If not coherent, we switch heater
+			if (current_room.state === "On") {
+				if (namebits[3] == 'inv') {
+					if (oneSwitch.Status === "On") {
+						// something is wrong: heater should be aligned with room
+						say(oneSwitch.Name + " (inverted) is On and should be Off !!!");
+						await switchHeaterOn(oneSwitch.idx, oneSwitch.Name, true);
+					} else {
+						// resend ?
+						if (current_room.resend) {
+							say(oneSwitch.Name + " resend On command");
+							await switchHeaterOn(oneSwitch.idx, oneSwitch.Name, true);
+						}
+					}
+				} else {
+					if (oneSwitch.Status === "Off") {
+						// something is wrong: heater should be aligned with room
+						say(oneSwitch.Name + " is Off and should be On !!!");
+						await switchHeaterOn(oneSwitch.idx, oneSwitch.Name, false);
+					} else {
+						// resend ?
+						if (current_room.resend) {
+							say(oneSwitch.Name + " resend On command");
+							await switchHeaterOn(oneSwitch.idx, oneSwitch.Name, false);
+						}
+					}
+				}
+				current_room.power += parseInt(namebits[4]);
+			} else {
+				if (namebits[3] == 'inv') {
+					if (oneSwitch.Status === "Off") {
+						// something is wrong: heater should be aligned with room
+						say(oneSwitch.Name + " (inverted) is Off and should be On !!!");
+						await switchHeaterOff(oneSwitch.idx, oneSwitch.Name, true);
+					} else {
+						// resend ?
+						if (current_room.resend) {
+							say(oneSwitch.Name + " resend Off command");
+							await switchHeaterOff(oneSwitch.idx, oneSwitch.Name, true);
+						}
+					}
+				} else {
+					if (oneSwitch.Status === "On") {
+						// something is wrong: heater should be aligned with room
+						say(oneSwitch.Name + " is On and should be Off !!!");
+						await switchHeaterOff(oneSwitch.idx, oneSwitch.Name, false);
+					} else {
+						// resend ?
+						if (current_room.resend) {
+							say(oneSwitch.Name + " resend Off command");
+							await switchHeaterOff(oneSwitch.idx, oneSwitch.Name, false);
+						}
+					}
+				}
+			}
+	
+		// deal with the VMC
+		} else if (namebits[0] == 'VMC') {
+			if (parseInt(domoJS.state.rooms[namebits[1]].humidity) >= parseInt(namebits[2])) {
+				// too wet
+				if (oneSwitch.Status == 'Off') {
+					await switchHeaterOn(oneSwitch.idx, oneSwitch.Name, false);
+				}
+			} else {
+				// dry enough
+				if (oneSwitch.Status == 'On') {
+					await switchHeaterOff(oneSwitch.idx, oneSwitch.Name, false);
+				}
+			}
+	
+		// Other
+		} else {
+			// console.log(oneSwitch.Name);
 		}
-		// console.log(domoJS.state);
+	
+	}
 
-        domoAPI.getSwitchesInfo( processOneSwitchData, countConsumption );
-    });
-
-    // console.log(state.rooms);
-};
+	// console.log(switches);
+}
 
 
 // switching on a heater
-function switchHeaterOn (devIdx, name, isInverted) {
+async function switchHeaterOn (devIdx, name, isInverted) {
     say( "sending switching ON  command to " + name );
 
     // this sends the request
     if (isInverted) {
-        domoAPI.switchDevice( devIdx, "Off");
+        await domoAPI.switchDevice( devIdx, "Off");
     } else {
-        domoAPI.switchDevice( devIdx, "On");
+        await domoAPI.switchDevice( devIdx, "On");
     }
 };
 
 
 // switching off a heater
-function switchHeaterOff (devIdx, name, isInverted) {
+async function switchHeaterOff (devIdx, name, isInverted) {
     say( "sending switching OFF command to " + name );
 
     // this sends the request
     if (isInverted) {
-        domoAPI.switchDevice( devIdx, "On");
+        await domoAPI.switchDevice( devIdx, "On");
     } else {
-        domoAPI.switchDevice( devIdx, "Off");
+        await domoAPI.switchDevice( devIdx, "Off");
     }
 };
 
-
-/**
- * We process the data from one switch (to read name and status of each heater switch)
- * @param oneSwitch
- */
-function processOneSwitchData ( oneSwitch ) {
-
-    // we automatically switch off the remote control buttons after two hours
-    if (oneSwitch.Name.substr(0,4) === "TC1B") {
-        // console.log(oneSwitch);
-        if (oneSwitch.Data === "On") {
-            let lastUpdate = new Date(oneSwitch.LastUpdate);
-            let lastUpdateInMinutes = Math.round( ( new Date().getTime() - lastUpdate.getTime()) / 1000 / 60 );
-            // console.log("Remote Control Button " + oneSwitch.Name + " clicked " + lastUpdateInMinutes + " minutes ago");
-            if (lastUpdateInMinutes > 120) {
-                // we send the command to switch off the remote control button to domoticz
-                domoAPI.switchDevice(oneSwitch.idx, "Off");
-                say("Shut down Remote Control Button " + oneSwitch.Name + " after 2 hours");
-
-                // this is just for the following lines (Remote Control buttons management)
-                oneSwitch.Data = "Off";
-            }
-        }
-
-        // this part will go when web interface is implemented
-        /*
-        if (oneSwitch.Data === "On") {
-            switch (oneSwitch.Name) {
-                case "TC1B1":  domoJS.state.rooms["Kitchen"].tempModifier = 1;  break;
-                case "TC1B2":  domoJS.state.rooms["Living"].tempModifier  = 1;  break;
-                case "TC1B3":  domoJS.state.rooms["Bed"].tempModifier     = 2;  break;
-            }
-        } else {
-            switch (oneSwitch.Name) {
-                case "TC1B1":  domoJS.state.rooms["Kitchen"].tempModifier = 0;  break;
-                case "TC1B2":  domoJS.state.rooms["Living"].tempModifier  = 0;  break;
-                case "TC1B3":  domoJS.state.rooms["Bed"].tempModifier     = 0;  break;
-            }
-		}
-		*/
-
-        return;
-    }
-
-	console.log(oneSwitch.Name);
-
-	let namebits = oneSwitch.Name.split('-');
-	// oneSwitch.idx
-	// Heater-Kitchen-Small-dir-36-1000
-
-
-	// deal with the heaters
-	if (namebits[0] == 'Heater') {
-		let current_room = domoJS.state.rooms[namebits[1]];
-
-		// now we check if heater and room state are coherent:
-		// room should impose the value of heater. If not coherent, we switch heater
-		if (current_room.state === "On") {
-			if (namebits[3] == 'inv') {
-				if (oneSwitch.Status === "On") {
-					// something is wrong: heater should be aligned with room
-					say(oneSwitch.Name + " (inverted) is On and should be Off !!!");
-					switchHeaterOn(oneSwitch.idx, oneSwitch.Name, true);
-				} else {
-					// resend ?
-					if (current_room.resend) {
-						say(oneSwitch.Name + " resend On command");
-						switchHeaterOn(oneSwitch.idx, oneSwitch.Name, true);
-					}
-				}
-			} else {
-				if (oneSwitch.Status === "Off") {
-					// something is wrong: heater should be aligned with room
-					say(oneSwitch.Name + " is Off and should be On !!!");
-					switchHeaterOn(oneSwitch.idx, oneSwitch.Name, false);
-				} else {
-					// resend ?
-					if (current_room.resend) {
-						say(oneSwitch.Name + " resend On command");
-						switchHeaterOn(oneSwitch.idx, oneSwitch.Name, false);
-					}
-				}
-			}
-			current_room.power += parseInt(namebits[4]);
-		} else {
-			if (namebits[3] == 'inv') {
-				if (oneSwitch.Status === "Off") {
-					// something is wrong: heater should be aligned with room
-					say(oneSwitch.Name + " (inverted) is Off and should be On !!!");
-					switchHeaterOff(oneSwitch.idx, oneSwitch.Name, true);
-				} else {
-					// resend ?
-					if (current_room.resend) {
-						say(oneSwitch.Name + " resend Off command");
-						switchHeaterOff(oneSwitch.idx, oneSwitch.Name, true);
-					}
-				}
-			} else {
-				if (oneSwitch.Status === "On") {
-					// something is wrong: heater should be aligned with room
-					say(oneSwitch.Name + " is On and should be Off !!!");
-					switchHeaterOff(oneSwitch.idx, oneSwitch.Name, false);
-				} else {
-					// resend ?
-					if (current_room.resend) {
-						say(oneSwitch.Name + " resend Off command");
-						switchHeaterOff(oneSwitch.idx, oneSwitch.Name, false);
-					}
-				}
-			}
-		}
-    }
-
-	// deal with the VMC
-	
-
-    // console.log(domoJS.state);
-}
 
 
 /**
@@ -285,9 +274,6 @@ function countConsumption() {
     // update last update in the state and save it to disk
     domoJS.state.lastUpdate = now.toISOString();
 
-    // get temperatures from Domoticz, pass the callback that is going to be applied on each room temperature
-    domoAPI.getTemperatures( processOneTemperatureData );
-
     // we save state in 5 seconds: we want to be sure that everything has been done
     setTimeout( writeState, 5000);
 
@@ -297,29 +283,10 @@ function countConsumption() {
 /**
  * Write down state in json file
  */
-function writeState() {
-    fs.writeFile( domoJS.state.file, JSON.stringify(domoJS.state, null, 4), function(err){ if(err) throw err; } );
-}
-
-
-
-/**
- * Decide who to switch on or off
- */
-function processOneTemperatureData (sensor) {
-    // console.log(sensor);
-
-    // we get the room from the name of the device: tempBed -> Bed
-    let room_name = sensor.Name.substring(4);
-
-    // update state
-    if (! domoJS.state.rooms[room_name]) {
-        say("Room " + room_name + " does not exist in domoJS.state");
-        return;
-    }
-    domoJS.state.rooms[room_name].setTemperature(sensor.Temp);
-    domoJS.state.rooms[room_name].setHumidity(sensor.Humidity);
-    domoJS.state.rooms[room_name].setLastSensorTime(sensor.LastUpdate);
+domoJS.writeState = async function(filepathname) {
+//	console.log(filepathname);
+//	console.log(JSON.stringify(domoJS.state, null, 4));
+    fs.writeFileSync( filepathname, JSON.stringify(domoJS.state, null, 4), function(err){ if(err) throw err; } );
 }
 
 
@@ -327,8 +294,8 @@ function processOneTemperatureData (sensor) {
  * Wrappers around gsheetAPI just so that I don't need to call
  * gsheetAPI (and have to require it) from the outside world.
  */
-domoJS.getTempsFromGoogleSheet = function() {
-    gsheetAPI.getTempsFromGoogleSheet(domoJS.configs);
+domoJS.getTempsFromGoogleSheet = async function() {
+    await gsheetAPI.getTempsFromGoogleSheet(domoJS.configs);
 };
 domoJS.uploadToGoogleSheet = function() {
     gsheetAPI.uploadToGoogleSheet(domoJS.configs, domoJS.state);
