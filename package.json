@@ -1,6 +1,6 @@
 {
   "name": "domoticz-heaters",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "Piloting Domoticz heaters with Node.js.",
   "main": "index.js",
   "scripts": {

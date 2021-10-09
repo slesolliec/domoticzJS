@@ -10,7 +10,6 @@ const fs        = require("fs");
 const MyDate    = require("./class/date");
 const domoAPI   = require("./class/domoticzAPI");
 const Room      = require("./class/room");
-const Heater    = require("./class/heater");
 const gsheetAPI = require("./class/googleSheetAPI");
 
 const domoJS = {};
@@ -54,24 +53,7 @@ domoJS.loadState = function( path ) {
     // (I love prototypal inheritance !!!)
     for (let room in domoJS.state.rooms)
         domoJS.state.rooms[room].__proto__ = Room;
-
-    // make all heaters inherit from Heater prototypal object
-    // (Have I ever told you I loved prototypal inheritance?)
-    forEachHeater( function(heater) {
-        heater.__proto__ = Heater;
-    });
 };
-
-
-/**
- * Utility: applies the function func to each heater of each room
- * @param {function} func function to be applied to each heater
- */
-function forEachHeater( func ) {
-    for ( let room_name in domoJS.state.rooms )
-        for ( let heater_idx in domoJS.state.rooms[room_name].heaters )
-            func( domoJS.state.rooms[room_name].heaters[heater_idx] );
-}
 
 
 /**
@@ -118,10 +100,44 @@ function loadWantedTemps(callback) {
  */
 domoJS.updateSwitchesStatus = function() {
     loadWantedTemps(function() {
+
+		// reset all power of rooms to zero
+		for (const name in domoJS.state.rooms) {
+			let room = domoJS.state.rooms[name];
+			room.power = 0;
+		}
+		// console.log(domoJS.state);
+
         domoAPI.getSwitchesInfo( processOneSwitchData, countConsumption );
     });
 
     // console.log(state.rooms);
+};
+
+
+// switching on a heater
+function switchHeaterOn (devIdx, name, isInverted) {
+    say( "sending switching ON  command to " + name );
+
+    // this sends the request
+    if (isInverted) {
+        domoAPI.switchDevice( devIdx, "Off");
+    } else {
+        domoAPI.switchDevice( devIdx, "On");
+    }
+};
+
+
+// switching off a heater
+function switchHeaterOff (devIdx, name, isInverted) {
+    say( "sending switching OFF command to " + name );
+
+    // this sends the request
+    if (isInverted) {
+        domoAPI.switchDevice( devIdx, "On");
+    } else {
+        domoAPI.switchDevice( devIdx, "Off");
+    }
 };
 
 
@@ -168,54 +184,79 @@ function processOneSwitchData ( oneSwitch ) {
         return;
     }
 
-    // quite ugly: we loop on all heaters to find the right one
-    for (let room_name in domoJS.state.rooms) {
-        let current_room = domoJS.state.rooms[room_name];
+	console.log(oneSwitch.Name);
 
-        for ( let heater_idx in current_room.heaters ) {
-            let current_heater = current_room.heaters[heater_idx];
+	let namebits = oneSwitch.Name.split('-');
+	// oneSwitch.idx
+	// Heater-Kitchen-Small-dir-36-1000
 
-            if (heater_idx === oneSwitch.idx) {
-                // we are on the right heater switch
-                // we copy the heater name from Domoticz (ok, often useless)
-                current_heater.name  = oneSwitch.Name;
 
-                // now we check if heater and room state are coherent:
-                // room should impose the value of heater. If not coherent, we switch heater
-                if (current_room.state === "On") {
-                    if (current_heater.isInverted) {
-                        if (oneSwitch.Status === "On") {
-                            // something is wrong: heater should be aligned with room
-                            say("Heater "+ current_heater.name + " (inverted) is On and should be Off !!!");
-                            current_heater.switchOn();
-                        }
-                    } else {
-                        if (oneSwitch.Status === "Off") {
-                            // something is wrong: heater should be aligned with room
-                            say("Heater "+ current_heater.name + " is Off and should be On !!!");
-                            current_heater.switchOn();
-                        }
-                    }
-                } else {
-                    if (current_heater.isInverted) {
-                        if (oneSwitch.Status === "Off") {
-                            // something is wrong: heater should be aligned with room
-                            say("Heater "+ current_heater.name + " (inverted) is Off and should be On !!!");
-                            current_heater.switchOff();
-                        }
-                    } else {
-                        if (oneSwitch.Status === "On") {
-                            // something is wrong: heater should be aligned with room
-                            say("Heater "+ current_heater.name + " is On and should be Off !!!");
-                            current_heater.switchOff();
-                        }
-                    }
-                }
-            }
-        }
+	// deal with the heaters
+	if (namebits[0] == 'Heater') {
+		let current_room = domoJS.state.rooms[namebits[1]];
+
+		// now we check if heater and room state are coherent:
+		// room should impose the value of heater. If not coherent, we switch heater
+		if (current_room.state === "On") {
+			if (namebits[3] == 'inv') {
+				if (oneSwitch.Status === "On") {
+					// something is wrong: heater should be aligned with room
+					say(oneSwitch.Name + " (inverted) is On and should be Off !!!");
+					switchHeaterOn(oneSwitch.idx, oneSwitch.Name, true);
+				} else {
+					// resend ?
+					if (current_room.resend) {
+						say(oneSwitch.Name + " resend On command");
+						switchHeaterOn(oneSwitch.idx, oneSwitch.Name, true);
+					}
+				}
+			} else {
+				if (oneSwitch.Status === "Off") {
+					// something is wrong: heater should be aligned with room
+					say(oneSwitch.Name + " is Off and should be On !!!");
+					switchHeaterOn(oneSwitch.idx, oneSwitch.Name, false);
+				} else {
+					// resend ?
+					if (current_room.resend) {
+						say(oneSwitch.Name + " resend On command");
+						switchHeaterOn(oneSwitch.idx, oneSwitch.Name, false);
+					}
+				}
+			}
+			current_room.power += parseInt(namebits[4]);
+		} else {
+			if (namebits[3] == 'inv') {
+				if (oneSwitch.Status === "Off") {
+					// something is wrong: heater should be aligned with room
+					say(oneSwitch.Name + " (inverted) is Off and should be On !!!");
+					switchHeaterOff(oneSwitch.idx, oneSwitch.Name, true);
+				} else {
+					// resend ?
+					if (current_room.resend) {
+						say(oneSwitch.Name + " resend Off command");
+						switchHeaterOff(oneSwitch.idx, oneSwitch.Name, true);
+					}
+				}
+			} else {
+				if (oneSwitch.Status === "On") {
+					// something is wrong: heater should be aligned with room
+					say(oneSwitch.Name + " is On and should be Off !!!");
+					switchHeaterOff(oneSwitch.idx, oneSwitch.Name, false);
+				} else {
+					// resend ?
+					if (current_room.resend) {
+						say(oneSwitch.Name + " resend Off command");
+						switchHeaterOff(oneSwitch.idx, oneSwitch.Name, false);
+					}
+				}
+			}
+		}
     }
 
-    // console.log(state);
+	// deal with the VMC
+	
+
+    // console.log(domoJS.state);
 }
 
 
@@ -266,7 +307,7 @@ function writeState() {
  * Decide who to switch on or off
  */
 function processOneTemperatureData (sensor) {
-    // console.log(thermometer.Name);
+    // console.log(sensor);
 
     // we get the room from the name of the device: tempBed -> Bed
     let room_name = sensor.Name.substring(4);
@@ -277,6 +318,7 @@ function processOneTemperatureData (sensor) {
         return;
     }
     domoJS.state.rooms[room_name].setTemperature(sensor.Temp);
+    domoJS.state.rooms[room_name].setHumidity(sensor.Humidity);
     domoJS.state.rooms[room_name].setLastSensorTime(sensor.LastUpdate);
 }
 

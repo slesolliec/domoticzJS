@@ -11,6 +11,7 @@ const MyDate = require("./date");
 const Room = {
     name:  "a room",
     temp:        10,
+	humidity:    50,
     wantedTemp:  10,
     tempModifier: 0,
     tempModifierUntil: undefined,
@@ -42,6 +43,13 @@ Room.setTemperature = function( temperature ) {
 };
 
 
+Room.setHumidity = function( humidity ) {
+    // say(" Setting temperature "+ temperature + " to room " + this.name);
+    this.humidity = humidity;
+};
+
+
+
 Room.setLastSensorTime = function( time ) {
     this.lastSensorTime = time;
     // we could check here that last sensor time is not too far away in time => no more batteries
@@ -59,6 +67,12 @@ Room.checkHeat = function() {
         this.tempModifierUntil = undefined;
     }
 
+	// we zero the resend flag
+	if (this.resend) {
+		this.resend = false;
+		this.lastSwitchTime = new Date().toISOString();
+	}
+
     const realWantedTemp = this.wantedTemp + this.tempModifier;
 
     // say("checking heat for room " + this.name);
@@ -67,6 +81,16 @@ Room.checkHeat = function() {
     if (this.temp < realWantedTemp) {
         // it's too cold: we turn heater on if not already on
         say( constantLength( this.name ) + " is cold: " + this.temp + "/" + realWantedTemp );
+
+		// check the temperature data is not too old
+		let lastSensorTime = new Date(this.lastSensorTime);
+		lastSensorTime.setHours( lastSensorTime.getHours() + 1 );
+		if (new Date() > lastSensorTime) {
+			say(this.name + " has not received temperature data for more than one hour:");
+			// switch heaters off
+			this.switchOff();
+			return;
+		}
 
         // switch heaters on
         this.switchOn();
@@ -96,7 +120,6 @@ Room.switchOn  = function() {
         this.nbHitsOff  = 0;
         this.state      = "On";
         this.lastSwitchTime = now.toISOString();
-        this.switchHeatersOn();
         return;
     }
 
@@ -117,18 +140,10 @@ Room.switchOn  = function() {
     // resend switch order
     say( "Switching ON " + this.name + " (resent)" );
     this.nbHitsOn++;
+	this.resend = true;
     this.lastSwitchTime = now.toISOString();
-    this.switchHeatersOn();
 };
 
-
-/**
- * Switch all heaters ON in this room
- */
-Room.switchHeatersOn = function() {
-    for (let heater in this.heaters)
-        this.heaters[heater].switchOn();
-};
 
 
 // switching off the room
@@ -143,7 +158,6 @@ Room.switchOff = function() {
         this.nbHitsOff  = 1;
         this.state      = "Off";
         this.lastSwitchTime = now.toISOString();
-        this.switchHeatersOff();
         return;
     }
 
@@ -164,19 +178,9 @@ Room.switchOff = function() {
     // resend switch order
     say( "Switching OFF " + this.name + " (resent)" );
     this.nbHitsOff++;
+	this.resend = true;
     this.lastSwitchTime = now.toISOString();
-    this.switchHeatersOff();
 };
-
-
-/**
- * Switch all heaters OFF in this room
- */
-Room.switchHeatersOff = function() {
-    for (let heater in this.heaters)
-        this.heaters[heater].switchOff();
-};
-
 
 
 module.exports = Room;
