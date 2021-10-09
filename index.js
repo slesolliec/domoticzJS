@@ -34,7 +34,7 @@ domoJS.loadConfigs = function( path ) {
     domoJS.configs = JSON.parse( fs.readFileSync( path ) );
 
     // give domoticz API access to configs
-    domoAPI.setConfigs( domoJS.configs );
+    domoAPI.setUrl( domoJS.configs.domoticz );
 };
 
 

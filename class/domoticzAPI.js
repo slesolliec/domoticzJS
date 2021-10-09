@@ -12,7 +12,6 @@
 
 const axios = require('axios');
 
-let configs;
 let baseurl;
 
 // what will be exported
@@ -31,12 +30,16 @@ function say( msg ) {
  * this must be called once before all the other request
  * @param configs
  */
-domoticzAPI.setConfigs = function ( confs ) {
+domoticzAPI.setUrl = function ( fullurl ) {
 
-	configs = confs;
-	baseurl = configs.domoticsapi + "/json.htm?"
-		+ "username="  + Buffer.from(configs.username).toString("base64")
-		+ "&password=" + Buffer.from(configs.password).toString("base64");
+	let host     = fullurl.split('@')[1];
+	let protocol = fullurl.split('@')[0].split('/')[0];
+	let username = fullurl.split('@')[0].split('/')[2].split(':')[0];
+	let password = fullurl.split('@')[0].split('/')[2].split(':')[1];
+
+	baseurl = protocol + '//' + host + "/json.htm?"
+		+ "username="  + Buffer.from(username).toString("base64")
+		+ "&password=" + Buffer.from(password).toString("base64");
 
 };
 
