@@ -89,9 +89,9 @@ MyDate.prototype.stringDate8 = function() {
 MyDate.prototype.stringTime5 = function() {
     let tmp = "";
     if (this.getHours() < 10) {
-        tmp += "0" + this.getHours() + ":";
+        tmp += "0" + this.getHours() + "h";
     } else {
-        tmp += this.getHours() + ":";
+        tmp += this.getHours() + "h";
     }
 
     if (this.getMinutes() < 10) {

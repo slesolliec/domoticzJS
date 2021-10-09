@@ -22,7 +22,7 @@ function say(msg) {
  * We read wanted temperatures from the Google Calc sheet
  * @param configs
  */
-googleSheetAPI.getTempsFromGoogleSheet = function( configs ) {
+googleSheetAPI.getTempsFromGoogleSheet = async function( configs ) {
 
     // setting current date
     const now = new MyDate();
@@ -30,94 +30,93 @@ googleSheetAPI.getTempsFromGoogleSheet = function( configs ) {
 
     const wantedTempsFile = configs.root + "wantedTemps.json";
 
-    const creds = require( configs.GoogleAPIclientSecret );
+	const creds = require( configs.GoogleAPIclientSecret );
+	// console.log(creds);
 
     // Create a document object using the ID of the spreadsheet - obtained from its URL.
-    const doc = new GoogleSpreadsheet( configs.GoogleTempSheetID );
+	const doc = new GoogleSpreadsheet( configs.GoogleTempSheetID );
+
+	// Initialize Auth - see more available options at https://theoephraim.github.io/node-google-spreadsheet/#/getting-started/authentication
+	try {
+		await doc.useServiceAccountAuth({
+			client_email: creds.client_email,
+			private_key: creds.private_key,
+	//		client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+	//		private_key: process.env.GOOGLE_PRIVATE_KEY,
+		});	
+	} catch (err) {
+		say("Error authenticating to Google: " + err);
+		process.exit(1);
+	}
+
+	try {
+		await doc.loadInfo();
+		// console.log(doc);
+	} catch (err) {
+		say("Error getting Google sheet content: " + err);
+		process.exit(1);
+	}
+
+	say("Loaded doc     : " + doc.title);  // +' by '+info.author.email);
+	// say("Last updated at: " + doc.updated);
 
     const temps = {};
 
-    // Authenticate with the Google Spreadsheets API.
-    doc.useServiceAccountAuth(creds, function (err) {
+	// check if local file is up to date
+	/* we cannot do this anymore, because we cannot get updated time of Google Sheet with new API
+    if (fs.existsSync( wantedTempsFile)) {
+		const stats = fs.statSync( wantedTempsFile);
+		const lastWritten = new MyDate(stats.mtime);
 
-		if (err) {
-			say("Error authenticating to Google: " + err);
-			process.exit(1);
+		if ((lastWritten.toISOString() > info.updated) && ( lastWritten.stringDate8() === now.stringDate8())) {
+			say("Local file up to date");
+			return;
+		}
+	}
+	*/
+
+	// sheet updated or new day: we need to download data
+	const sheet = doc.sheetsByIndex[now.getDay()];
+	say("Sheet          : " + sheet.title);
+	// console.log(sheet);
+
+	try {
+		await sheet.loadCells('A1:K20');
+	} catch (err) {
+		say("Error loading cell content: " + err);
+		return;
+	}
+
+	let col = 1;
+	let room_name = sheet.getCell(0, col).value.trim();
+	while (room_name) {
+		// say(room_name);
+		let line = 1;
+		let time = sheet.getCell(line, 0).value.toString().trim();
+		while(time) {
+			// say(time);
+
+			let value = sheet.getCell(line, col).value;
+			if (value) {
+				if ( ! temps[room_name]) {
+					temps[room_name] = {};
+				}
+				temps[room_name][time] = value;
+			}
+			// console.log(value);
+
+			line++;
+			time = sheet.getCell(line, 0).value?.toString().trim();	
 		}
 
-        // Get infos and worksheets
-        doc.getInfo( function(err, info) {
-			if (err) {
-				say("Error getting Google sheet: " + err);
-				process.exit(1);
-			}
-			
-			say("Loaded doc     : " + info.title);  // +' by '+info.author.email);
-            say("Last updated at: " + info.updated);
+		col++;
+		room_name = sheet.getCell(0, col).value?.trim();
+	}
+	console.log(temps);
 
-            // check if local file is up to date
-            if (fs.existsSync( wantedTempsFile)) {
-                const stats = fs.statSync( wantedTempsFile);
-                const lastWritten = new MyDate(stats.mtime);
-
-                if ((lastWritten.toISOString() > info.updated) && ( lastWritten.stringDate8() === now.stringDate8())) {
-                    say("Local file up to date");
-                    return;
-                }
-            }
-
-            // sheet updated or new day: we need to download data
-            const sheet = info.worksheets[now.getDay()];
-            say("Sheet          : " + sheet.title);
-
-            sheet.getCells({
-                "min-row":  1,
-                "max-row": 20,
-                "min-col":  1,
-                "max-col": 10,
-                "return-empty":true
-            }, function(err, cells) {
-
-                if (err) say(err);
-
-                let currentCell = cells.shift();
-                let temps    = {};
-                let roomcols = {};
-
-                // read the rooms names in the first row
-                while (currentCell.row === 1) {
-                    if ((currentCell.col > 1) && (currentCell.value !== "")) {
-                        temps[currentCell.value] = {};
-                        roomcols[currentCell.col] = currentCell.value;
-                    }
-                    currentCell = cells.shift();
-                }
-                cells.unshift(currentCell);
-
-                let currentTime;
-
-                // read all the other cells
-                cells.forEach( function (oneCell) {
-                    // update time for each line
-                    if (oneCell.col === 1) {
-                        currentTime = oneCell.value;
-                    } else {
-                        // add temp
-                        if (oneCell.value !== "") {
-                            temps[ roomcols[oneCell.col] ][currentTime] = oneCell.value;
-                        }
-                    }
-
-                });
-
-                say(temps);
-
-                // save wanted temperatures cache file
-                // so that we don't need to bother Google Sheets every minute
-                fs.writeFile( wantedTempsFile, JSON.stringify(temps, null, 4), function(err){ if(err) throw err; } );
-            });
-        });
-    });
+    // save wanted temperatures cache file
+    // so that we don't need to bother Google Sheets every minute
+    fs.writeFile( wantedTempsFile, JSON.stringify(temps, null, 4), function(err){ if(err) throw err; } );
 };
 
 
