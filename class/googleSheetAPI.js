@@ -106,11 +106,11 @@ googleSheetAPI.getTempsFromGoogleSheet = async function( configs ) {
 			// console.log(value);
 
 			line++;
-			time = sheet.getCell(line, 0).value?.toString().trim();	
+			time = sheet.getCell(line, 0).value && sheet.getCell(line, 0).value.toString().trim();	
 		}
 
 		col++;
-		room_name = sheet.getCell(0, col).value?.trim();
+		room_name = sheet.getCell(0, col).value && sheet.getCell(0, col).value.trim();
 	}
 	console.log(temps);
 
