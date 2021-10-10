@@ -146,7 +146,7 @@ domoJS.updateSwitches = async function() {
 				if (namebits[3] == 'inv') {
 					if (oneSwitch.Status === "On") {
 						// something is wrong: heater should be aligned with room
-						say(oneSwitch.Name + " (inverted) is On and should be Off !!!");
+						// say(oneSwitch.Name + " (inverted) is On and should be Off !!!");
 						await switchHeaterOn(oneSwitch.idx, oneSwitch.Name, true);
 					} else {
 						// resend ?
@@ -158,7 +158,7 @@ domoJS.updateSwitches = async function() {
 				} else {
 					if (oneSwitch.Status === "Off") {
 						// something is wrong: heater should be aligned with room
-						say(oneSwitch.Name + " is Off and should be On !!!");
+						// say(oneSwitch.Name + " is Off and should be On !!!");
 						await switchHeaterOn(oneSwitch.idx, oneSwitch.Name, false);
 					} else {
 						// resend ?
@@ -173,7 +173,7 @@ domoJS.updateSwitches = async function() {
 				if (namebits[3] == 'inv') {
 					if (oneSwitch.Status === "Off") {
 						// something is wrong: heater should be aligned with room
-						say(oneSwitch.Name + " (inverted) is Off and should be On !!!");
+						// say(oneSwitch.Name + " (inverted) is Off and should be On !!!");
 						await switchHeaterOff(oneSwitch.idx, oneSwitch.Name, true);
 					} else {
 						// resend ?
@@ -185,7 +185,7 @@ domoJS.updateSwitches = async function() {
 				} else {
 					if (oneSwitch.Status === "On") {
 						// something is wrong: heater should be aligned with room
-						say(oneSwitch.Name + " is On and should be Off !!!");
+						// say(oneSwitch.Name + " is On and should be Off !!!");
 						await switchHeaterOff(oneSwitch.idx, oneSwitch.Name, false);
 					} else {
 						// resend ?

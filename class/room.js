@@ -40,6 +40,7 @@ Room.setTemperature = function( temperature ) {
     // say(" Setting temperature "+ temperature + " to room " + this.name);
     this.temp = temperature;
     this.checkHeat();
+	// say("temperature " + temperature + " set in room " + this.name);
 };
 
 

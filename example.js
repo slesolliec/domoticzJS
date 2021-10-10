@@ -40,7 +40,7 @@ async function work() {
 
 	await domoJS.writeState(path.join(__dirname, "house_state.json"));
 
-	console.log('');
+	console.log('-----');
 
 //	console.log(domoJS.state.rooms.Bed);
 //	console.log(domoJS.state.rooms.Bath2);
